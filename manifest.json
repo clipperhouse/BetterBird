@@ -2,18 +2,19 @@
   "name": "BetterBird",
   "version": "0.1",
   "description": "Makes Twitter a bit better",
-"icons": { "16": "twitter_16.png",
-           "32": "twitter_32.png",
-           "64": "twitter_64.png",
-           "128": "twitter_128.png"
+  "icons": { "16": "img/twitter_16.png",
+           "32": "img/twitter_32.png",
+           "64": "img/twitter_64.png",
+           "128": "img/twitter_128.png"
          },
   "browser_action": {
-    "default_icon": "twitter_64.png"
+    "default_icon": "img/twitter_32.png"
   },
   "content_scripts": [
     {
       "matches": ["http://twitter.com/*", "https://twitter.com/*"],
-      "css": ["styles.css"]
+      "css": ["styles.css"],
+      "js": ["js/jquery-1.7.1.min.js", "js/contentscript.js"]
     }
   ],
   "permissions": [
