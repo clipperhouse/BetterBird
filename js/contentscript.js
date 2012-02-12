@@ -6,6 +6,7 @@
 		var querystring = /\?.*$/;
 		var trailingid = /\/\d+$/g;
 		var trailing = /[\/\-\.]$/;
+		var classnames = { expand: "bb-expand", direct: "bb-direct" };
 		return {  
 			AbbrevUrl: function(u) {
 				var parts = decodeURIComponent(u.replace(scheme, '').replace(trailingid, '').replace(fileext, '').replace(querystring, '').replace(trailing, ''))
@@ -16,13 +17,20 @@
 				var u2 = parts[0] + "/…/" + parts[parts.length - 1];
 				return u2;
 			},
-			SetUrls: function(scope) {
-				$("a[data-ultimate-url]", scope).not(".set-url").each(function() {
+			ExpandUrls: function(scope) {
+				$("a[data-ultimate-url]", scope).not("a." + classnames.expand).each(function() {
 					var a = $(this);
 					var u = a.data("ultimate-url");
 					a.attr("href", u)
 					 .text(BetterBird.AbbrevUrl(u))
-					 .addClass("set-url");
+					 .addClass(classnames.expand).addClass(classnames.direct);
+				});
+			},
+			RemoveRedirects: function(scope) {
+				$("a[data-expanded-url]", scope).not("a." + classnames.direct).each(function() {
+					var a = $(this);
+					var u = a.data("expanded-url");
+					a.attr("href", u).addClass(classnames.direct);
 				});
 			}
 		};
@@ -40,10 +48,10 @@
 		$("div.mini-profile", d).after(m);
 		$("div.trends").hide();
 		$("div[data-component-term='user_recommendations'] h3").text("Whom to follow");
-		$("ul.stats > li").last().prependTo($("ul.stats"));
 	}, 1500);
 
 	setInterval(function() {
-		BetterBird.SetUrls(stream);
+		BetterBird.ExpandUrls(stream);
+		BetterBird.RemoveRedirects(stream);
 	}, 1200);
 })()

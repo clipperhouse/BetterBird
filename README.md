@@ -3,10 +3,13 @@
 
 This Google Chrome extension will:
 
-- Move content (usually your timeline) to the left-hand side and the dashboard stuff to the right
+- Move content (timeline) to the left-hand side and the dashboard stuff to the right.
 - Expose your saved searches in the dashboard; they are currently buried under the search box in the header.
+- Expand shortened URL's wherever possible, so you know where you are actually clicking.
+- Speaking of which, no need to go through t.co, now is there?
+- Widen the layout, and use a nicer font (Georgia), which makes glib bullshit seem 0.1% more literary.
 
-To install, you can simply download as a .zip above or pull with Git.
+To install, you can [download as a .zip](https://github.com/mwsherman/BetterBird/zipball/master) or pull with Git.
 
 In Chrome, go to Tools > Extensions and select the checkbox for “Developer mode” in the upper right. Then “Load unpacked extension...” and select the the downloaded source folder.
 
