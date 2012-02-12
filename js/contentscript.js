@@ -1,29 +1,36 @@
+
 (function() {
-	var scheme = /^http[s]?:\/\/(www\.)*/;
-	var fileext = /(.html|.php|.aspx)/i;
-	var querystring = /\?.*$/;
-	var endids = /\/\d+$/g;
+	var betterBird = function () {  
+		var scheme = /^http[s]?:\/\/(www\.)*/;
+		var fileext = /(.html|.php|.aspx)/i;
+		var querystring = /\?.*$/;
+		var trailingid = /\/\d+$/g;
+		var trailing = /[\/\-\.]$/;
+		return {  
+			AbbrevUrl: function(u) {
+				var parts = decodeURIComponent(u.replace(scheme, '').replace(trailingid, '').replace(fileext, '').replace(querystring, '').replace(trailing, ''))
+							 .split('/');
+				if (parts.length <= 2) {
+					return parts.join('/');
+				}
+				var u2 = parts[0] + "/…/" + parts[parts.length - 1];
+				return u2;
+			},
+			SetUrls: function(scope) {
+				$("a[data-ultimate-url]", scope).not(".set-url").each(function() {
+					var a = $(this);
+					var u = a.data("ultimate-url");
+					a.attr("href", u)
+					 .text(BetterBird.AbbrevUrl(u))
+					 .addClass("set-url");
+				});
+			}
+		};
+	};
+
+	var BetterBird = betterBird();
 	var stream = $("div.stream");
-
-	var abbrevurl = function(u) {
-		var parts = u.replace(scheme, '').replace(endids, '').replace(fileext, '').replace(querystring, '').split('/');
-		if (parts.length <= 2) {
-			return parts.join('/');
-		}
-		var u2 = parts[0] + "/…/" + parts[parts.length - 1];
-		return u2;
-	};
-
-	var seturls = function(){
-		$("a[data-ultimate-url]", stream).not(".set-url").each(function(){
-			var a = $(this);
-			var u = a.data("ultimate-url");
-			a.attr("href", u);
-			$(this).text(abbrevurl(u));
-			a.addClass("set-url");
-		});
-	};
-
+	
 	setTimeout(function() {
 		var m = $("<div class='module' />").css("background-color", "#fff")
 			.append($("<div class='flex-module' />")
@@ -34,7 +41,9 @@
 		$("div.trends").hide();
 		$("div[data-component-term='user_recommendations'] h3").text("Whom to follow");
 		$("ul.stats > li").last().prependTo($("ul.stats"));
-		seturls();
-		setInterval(seturls, 3000);
 	}, 1500);
+
+	setInterval(function() {
+		BetterBird.SetUrls(stream);
+	}, 1200);
 })()
