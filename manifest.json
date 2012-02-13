@@ -2,6 +2,7 @@
   "name": "Better Bird",
   "version": "0.1",
   "description": "Makes Twitter a bit better",
+  "background_page": "background.html",
   "icons": { "16": "img/twitter_16.png",
              "32": "img/twitter_32.png",
              "64": "img/twitter_64.png",
@@ -14,14 +15,9 @@
       "matches": ["http://twitter.com/*", "https://twitter.com/*"],
       "css": ["styles.css"],
       "js": ["js/jquery-1.7.1.min.js", "js/contentscript.js"]
-    },
-    {
-      "matches": ["<all_urls>"],
-      "js": ["js/button.js"]
     }
-
   ],
   "permissions": [
-    "tabs", "*//twitter.com/*"
+    "tabs"
   ]
 }

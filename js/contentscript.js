@@ -54,4 +54,8 @@
 		BetterBird.ExpandUrls(stream);
 		BetterBird.RemoveRedirects(stream);
 	}, 1200);
+
+	chrome.extension.onRequest.addListener(function(request) {
+		document.location.href = $("li#global-nav-home > a").attr("href");
+	});
 })()
