@@ -66,6 +66,10 @@
 					});
 				});
 				return searches.length;
+			},
+			DirectToProfile: function(scope){
+				$("a.js-user-profile-link", scope).removeClass("js-account-group js-action-profile js-user-profile-link");
+				$("a.twitter-atreply").removeClass("twitter-atreply pretty-link");
 			}
 		};
 	};
@@ -78,7 +82,8 @@
 			var stream = $("div.stream");
 			BetterBird.ExpandUrls(stream);
 			BetterBird.RemoveRedirects(stream);
-		}, 1200);
+			BetterBird.DirectToProfile(stream);
+		}, 1500);
 		BetterBird.GetSavedSearches();
 	}, 1500);
 
