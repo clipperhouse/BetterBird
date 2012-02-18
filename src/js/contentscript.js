@@ -81,21 +81,17 @@
 				});
 			},
 			ExpandUrls: function(scope) {
-				$("a[data-ultimate-url]", scope).not("a." + classnames.expand).each(function() {
+				$("a[data-ultimate-url], a[data-expanded-url]", scope).not("a." + classnames.expand).each(function() {
 					var a = $(this);
-					var u = a.data("ultimate-url");
-					a.attr("href", u)
-					 .text(abbrevUrl(u))
-					 .addClass(classnames.expand).addClass(classnames.direct);
+					var u = a.data("ultimate-url") || a.data("expanded-url");
+					a.text(abbrevUrl(u)).addClass(classnames.expand);
 				});
 			},
 			RemoveRedirects: function(scope) {
-				$("a[data-expanded-url]", scope).not("a." + classnames.direct).each(function() {
+				$("a[data-ultimate-url], a[data-expanded-url]", scope).not("a." + classnames.direct).each(function() {
 					var a = $(this);
-					var u = a.data("expanded-url");
-					a.attr("href", u)
-					 .text(BetterBird.AbbrevUrl(u))
-					 .addClass(classnames.direct);
+					var u = a.data("ultimate-url") || a.data("expanded-url");
+					a.attr("href", u).addClass(classnames.direct);
 				});
 			},
 			GetSavedSearches: function () {
