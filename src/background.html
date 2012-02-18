@@ -1,0 +1,46 @@
+<html>
+  <script>
+    //React when a browser action's icon is clicked.
+    chrome.browserAction.onClicked.addListener(function(tab) {
+    	chrome.tabs.query({ url : "*://twitter.com/*" }, function (tabs) {
+    		var tabid;
+    		if (tabs.length) {
+    			tabid = tabs[0].id;
+    			chrome.tabs.update(tabid, { active: true });
+    			chrome.tabs.sendRequest(tabid, "go-home");
+    		} else {
+	    		chrome.tabs.create({ url : "http://twitter.com" }, function(tab) {
+	    			tabid = tab.id;
+	    		});
+			}
+    	});
+    });
+
+    var optionskey = "options";
+    var defaultoptions = {
+        "columnswitch": true,
+        "columnwide":true,
+        "fontgeorgia": true,
+        "fontverdana": false
+    };
+    var loadOptions = function () {
+        var options = localStorage[optionskey];
+        if (options){
+            return JSON.parse(options);
+        }
+        return defaultoptions;
+    };
+
+    var saveOptions = function (options) {
+        localStorage[optionskey] = JSON.stringify(options);
+    };
+
+    chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
+        if (request.type == "load-options") {
+          sendResponse(loadOptions());
+        } else {
+          sendResponse({});
+        }
+    });
+  </script>
+</html>

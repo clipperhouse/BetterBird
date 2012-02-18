@@ -13,16 +13,35 @@
 			expand: "bb-expand", 
 			direct: "bb-direct", 
 			savedsearch: "bb-saved-search", 
-			columnswitch: "bb-column-switch" 
+			columnswitch: "bb-column-switch",
+			columnwide: "bb-column-wide",
+			fontgeorgia: "bb-fontgeorgia",
+			fontverdana: "bb-fontverdana",
 		};
 		var body = $(document.body);
 		var wrapper = $("div.wrapper");
-		var dashboard = $("div.dashboard", wrapper); 
+		var dashboard = $("div.dashboard", wrapper);
+		var options;
 
-		return {  
+		return {
 			Init: function(){
-				body.addClass(classnames.columnswitch);
-				wrapper.show();
+				chrome.extension.sendRequest({ "type": "load-options" }, function (response) {
+					options = response;
+					console.log(options);
+					if (options.columnswitch) { 
+						body.addClass(classnames.columnswitch);
+					}
+					if (options.columnwide) { 
+						body.addClass(classnames.columnwide);
+					}
+					if (options.fontgeorgia) { 
+						body.addClass(classnames.fontgeorgia);
+					}
+					if (options.fontverdana) { 
+						body.addClass(classnames.fontverdana);
+					}
+					wrapper.show();
+				});
 			},
 			AbbrevUrl: function(url) {
 				var parts = decodeURIComponent(url

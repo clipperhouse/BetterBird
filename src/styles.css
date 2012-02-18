@@ -1,0 +1,39 @@
+div.wrapper {
+	display: none;
+}
+
+
+body.bb-column-switch div.content-main {
+	float:left;
+}
+
+body.bb-column-switch div.dashboard {
+	float:right;
+}
+
+
+body.bb-column-wide div.wrapper {
+	width:987px;
+}
+
+body.bb-column-wide div.content-main {
+	width:672px;
+}
+
+body.bb-column-wide div.global-nav div.container {
+	width: 1015px;
+}
+
+body.bb-column-wide div.tweet p {
+	width:92%;
+}
+
+
+body.bb-fontgeorgia {
+	font: 15px/19px Georgia,serif;
+}
+
+body.bb-fontverdana {
+	font: 15px/19px Verdana,sans-serif;
+}
+
