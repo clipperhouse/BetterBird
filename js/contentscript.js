@@ -1,23 +1,42 @@
 
 (function() {
-	var betterBird = function () {  
-		var scheme = /^http[s]?:\/\/(www\.)*/;
-		var fileext = /(.html|.php|.aspx)/i;
-		var querystring = /\?.*$/;
-		var trailingid = /\/\d+$/g;
-		var trailing = /[\/\-\.]$/;
-		var classnames = { expand: "bb-expand", direct: "bb-direct", savedsearch: "bb-saved-search" };
-		var dashboard = $("div.dashboard"); 
+	String.prototype.remove = function(r) { return this.replace(r, ''); };
+	var betterBird = function () {
+		var regex = {
+			scheme: /^http[s]?:\/\/(www\.)*/,
+			trailingid: /\/\d+$/g,
+			trailing: /[\/\-\.\s]$/,
+			fileext: /(.html|.php|.aspx)/i,
+			querystring: /\?.*$/,
+		};
+		var classnames = { 
+			expand: "bb-expand", 
+			direct: "bb-direct", 
+			savedsearch: "bb-saved-search", 
+			columnswitch: "bb-column-switch" 
+		};
+		var body = $(document.body);
+		var wrapper = $("div.wrapper");
+		var dashboard = $("div.dashboard", wrapper); 
 
 		return {  
-			AbbrevUrl: function(u) {
-				var parts = decodeURIComponent(u.replace(scheme, '').replace(trailingid, '').replace(fileext, '').replace(querystring, '').replace(trailing, ''))
-							 .split('/');
+			Init: function(){
+				body.addClass(classnames.columnswitch);
+				wrapper.show();
+			},
+			AbbrevUrl: function(url) {
+				var parts = decodeURIComponent(url
+					.remove(regex.scheme)
+					.remove(regex.querystring)
+					.remove(regex.trailingid)
+					.remove(regex.fileext)
+					.remove(regex.trailing)
+					).split('/');
 				if (parts.length <= 2) {
 					return parts.join('/');
 				}
-				var u2 = parts[0] + "/…/" + parts[parts.length - 1];
-				return u2;
+				parts.splice(1, parts.length - 2, "…");
+				return parts.join('/');
 			},
 			ExpandUrls: function(scope) {
 				$("a[data-ultimate-url]", scope).not("a." + classnames.expand).each(function() {
@@ -68,13 +87,14 @@
 				return searches.length;
 			},
 			DirectToProfile: function(scope){
-				$("a.js-user-profile-link", scope).removeClass("js-account-group js-action-profile js-user-profile-link");
+				$("a.js-user-profile-link").removeClass("js-account-group js-action-profile js-user-profile-link");
 				$("a.twitter-atreply").removeClass("twitter-atreply pretty-link");
 			}
 		};
 	};
 
 	var BetterBird = betterBird();
+	BetterBird.Init();
 	
 	setTimeout(function() {
 		$("div.trends").hide();
@@ -92,6 +112,7 @@
 		switch(request) {
 			case "go-home":
 			  document.location.href = $("li#global-nav-home > a").attr("href");
+			  $("div.new-tweets-bar").click();
 			  break;
 			default:			  
 		}

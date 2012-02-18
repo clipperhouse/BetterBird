@@ -1,13 +1,17 @@
-div.content-main {
+div.wrapper {
+	display: none;
+}
+
+body.bb-column-switch div.content-main {
 	float:left;
 	width:672px;
 }
 
-div.dashboard {
+body.bb-column-switch div.dashboard {
 	float:right;
 }
 
-div.wrapper {
+body.bb-column-switch div.wrapper {
 	width:987px;
 }
 
@@ -24,5 +28,10 @@ div.tweet p {
 }
 
 div.stream-item .content {
-	margin-left: 62px;
+	margin-left: 56px;
+}
+
+div.stream-item img.avatar {
+	width:42px;
+	height:42px;
 }
