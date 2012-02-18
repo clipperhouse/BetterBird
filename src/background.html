@@ -21,8 +21,12 @@
         "columnswitch": true,
         "columnwide":true,
         "fontgeorgia": true,
-        "fontverdana": false
+        "fontverdana": false,
+        "expandurls": true,
+        "directtoprofile": true,
+        "savedsearches": true
     };
+
     var loadOptions = function () {
         var options = localStorage[optionskey];
         if (options){
@@ -33,14 +37,22 @@
 
     var saveOptions = function (options) {
         localStorage[optionskey] = JSON.stringify(options);
+        return true;
     };
 
     chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
-        if (request.type == "load-options") {
-          sendResponse(loadOptions());
-        } else {
-          sendResponse({});
+        var response;
+        switch(request.type) {
+            case "load-options":
+              response = loadOptions();
+              break;
+            case "save-options":
+              response = { success: saveOptions(request.options) };
+              break;
+            default:
+              response = {};
         }
+        sendResponse(response)
     });
   </script>
 </html>

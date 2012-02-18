@@ -22,47 +22,70 @@
 		var wrapper = $("div.wrapper");
 		var dashboard = $("div.dashboard", wrapper);
 		var options;
+		var interval;
+
+		var applyCss = function (options){
+			if (options.columnswitch) { 
+				body.addClass(classnames.columnswitch);
+			}
+			if (options.columnwide) { 
+				body.addClass(classnames.columnwide);
+			}
+			if (options.fontgeorgia) { 
+				body.addClass(classnames.fontgeorgia);
+			}
+			if (options.fontverdana) { 
+				body.addClass(classnames.fontverdana);
+			}
+			wrapper.show();
+		};
+
+		var abbrevUrl = function(url) {
+			var parts = decodeURIComponent(url
+				.remove(regex.scheme)
+				.remove(regex.querystring)
+				.remove(regex.trailingid)
+				.remove(regex.fileext)
+				.remove(regex.trailing)
+				).split('/');
+			if (parts.length <= 2) {
+				return parts.join('/');
+			}
+			parts.splice(1, parts.length - 2, "…");
+			return parts.join('/');
+		};
 
 		return {
 			Init: function(){
-				chrome.extension.sendRequest({ "type": "load-options" }, function (response) {
-					options = response;
+				clearInterval(interval);
+
+				chrome.extension.sendRequest({ "type": "load-options" }, function (options) {
 					console.log(options);
-					if (options.columnswitch) { 
-						body.addClass(classnames.columnswitch);
-					}
-					if (options.columnwide) { 
-						body.addClass(classnames.columnwide);
-					}
-					if (options.fontgeorgia) { 
-						body.addClass(classnames.fontgeorgia);
-					}
-					if (options.fontverdana) { 
-						body.addClass(classnames.fontverdana);
-					}
-					wrapper.show();
+					applyCss(options);
+					setTimeout(function() {
+						$("div.trends").hide();
+						interval = setInterval(function() {
+							var stream = $("div.stream");
+							if (options.expandurls) {
+								BetterBird.ExpandUrls(stream);
+								BetterBird.RemoveRedirects(stream);
+							}
+							if (options.directtoprofile) {
+								BetterBird.DirectToProfile(stream);
+							}
+						}, 1500);
+						if (options.savedsearches) {
+							BetterBird.GetSavedSearches();
+						}
+					}, 1500);
 				});
-			},
-			AbbrevUrl: function(url) {
-				var parts = decodeURIComponent(url
-					.remove(regex.scheme)
-					.remove(regex.querystring)
-					.remove(regex.trailingid)
-					.remove(regex.fileext)
-					.remove(regex.trailing)
-					).split('/');
-				if (parts.length <= 2) {
-					return parts.join('/');
-				}
-				parts.splice(1, parts.length - 2, "…");
-				return parts.join('/');
 			},
 			ExpandUrls: function(scope) {
 				$("a[data-ultimate-url]", scope).not("a." + classnames.expand).each(function() {
 					var a = $(this);
 					var u = a.data("ultimate-url");
 					a.attr("href", u)
-					 .text(BetterBird.AbbrevUrl(u))
+					 .text(abbrevUrl(u))
 					 .addClass(classnames.expand).addClass(classnames.direct);
 				});
 			},
@@ -114,18 +137,6 @@
 
 	var BetterBird = betterBird();
 	BetterBird.Init();
-	
-	setTimeout(function() {
-		$("div.trends").hide();
-		setInterval(function() {
-			var stream = $("div.stream");
-			BetterBird.ExpandUrls(stream);
-			BetterBird.RemoveRedirects(stream);
-			BetterBird.DirectToProfile(stream);
-		}, 1500);
-		BetterBird.GetSavedSearches();
-	}, 1500);
-
 
 	chrome.extension.onRequest.addListener(function(request) {
 		switch(request) {
