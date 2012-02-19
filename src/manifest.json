@@ -12,13 +12,15 @@
   },
   "content_scripts": [
     {
-      "matches": ["http://twitter.com/*", "https://twitter.com/*"],
+      "matches": ["*://twitter.com/*"],
       "css": ["styles.css"],
       "js": ["js/jquery-1.7.1.min.js", "js/contentscript.js"]
     }
   ],
   "permissions": [
     "tabs",
-    "<all_urls>"
+    "*://twitter.com/*",
+    "*://search.twitter.com/*",
+    "*://api.twitter.com/*"
   ]
 }

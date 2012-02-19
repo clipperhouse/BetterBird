@@ -3,28 +3,28 @@ div.wrapper {
 }
 
 
-body.bb-column-switch div.content-main {
+body.bb-columnswitch div.content-main {
 	float:left;
 }
 
-body.bb-column-switch div.dashboard {
+body.bb-columnswitch div.dashboard {
 	float:right;
 }
 
 
-body.bb-column-wide div.wrapper {
+body.bb-columnwide div.wrapper {
 	width:987px;
 }
 
-body.bb-column-wide div.content-main {
+body.bb-columnwide div.content-main {
 	width:672px;
 }
 
-body.bb-column-wide div.global-nav div.container {
+body.bb-columnwide div.global-nav div.container {
 	width: 1015px;
 }
 
-body.bb-column-wide div.tweet p {
+body.bb-columnwide div.tweet p {
 	width:92%;
 }
 

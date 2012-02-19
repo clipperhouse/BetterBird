@@ -1,58 +1,59 @@
 <html>
-  <script>
-    //React when a browser action's icon is clicked.
-    chrome.browserAction.onClicked.addListener(function(tab) {
-    	chrome.tabs.query({ url : "*://twitter.com/*" }, function (tabs) {
-    		var tabid;
-    		if (tabs.length) {
-    			tabid = tabs[0].id;
-    			chrome.tabs.update(tabid, { active: true });
-    			chrome.tabs.sendRequest(tabid, "go-home");
-    		} else {
-	    		chrome.tabs.create({ url : "http://twitter.com" }, function(tab) {
-	    			tabid = tab.id;
-	    		});
-			}
-    	});
-    });
+<script>
+//React when a browser action's icon is clicked.
+chrome.browserAction.onClicked.addListener(function(tab) {
+   chrome.tabs.query({ url : "*://twitter.com/*" }, function (tabs) {
+      var tabid;
+      if (tabs.length) {
+         tabid = tabs[0].id;
+         chrome.tabs.update(tabid, { active: true });
+         chrome.tabs.sendRequest(tabid, "go-home");
+     } else {
+         chrome.tabs.create({ url : "http://twitter.com" }, function(tab) {
+            tabid = tab.id;
+        });
+    }
+});
+});
 
-    var optionskey = "options";
-    var defaultoptions = {
-        "columnswitch": true,
-        "columnwide":true,
-        "fontgeorgia": true,
-        "fontverdana": false,
-        "expandurls": true,
-        "directtoprofile": true,
-        "savedsearches": true
-    };
+var currentversion = "0.1";
+var optionskey = "options";
+var defaultoptions = {
+    version: currentversion,
+    styles: {
+        columnswitch: true,
+        columnwide: true,
+        fontgeorgia: true,
+        fontverdana: false 
+    },
+    expandurls: true,
+    directtoprofile: true,
+    savedsearches: true
+};
 
-    var loadOptions = function () {
-        var options = localStorage[optionskey];
-        if (options){
-            return JSON.parse(options);
-        }
-        return defaultoptions;
-    };
+var loadOptions = function () {                             // TODO: version migration if not current
+    var options = localStorage[optionskey];
+    if (options) {
+        return JSON.parse(options);
+    }
+    return defaultoptions;
+};
 
-    var saveOptions = function (options) {
-        localStorage[optionskey] = JSON.stringify(options);
-        return true;
-    };
+var saveOptions = function (options) {                      // TODO: version migration if not current
+    localStorage[optionskey] = JSON.stringify(options);
+    return true;
+};
 
-    chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
-        var response;
-        switch(request.type) {
-            case "load-options":
-              response = loadOptions();
-              break;
-            case "save-options":
-              response = { success: saveOptions(request.options) };
-              break;
-            default:
-              response = {};
-        }
-        sendResponse(response)
-    });
-  </script>
+chrome.extension.onRequest.addListener(function(request, sender, callback) {
+    switch(request.type) {
+        case "load-options":
+            callback(loadOptions());
+            break;
+        case "save-options":
+            callback({ success: saveOptions(request.options) });
+            break;
+        default:
+    }
+});
+</script>
 </html>
