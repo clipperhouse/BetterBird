@@ -1,7 +1,12 @@
 (function($) {
   $.fn.filterByData = function(key, value) {
+  	if (value) {
+	  	return this.filter(function () {
+			return $(this).data(key) == value;
+		});  		
+  	}
   	return this.filter(function () {
-		return $(this).data(key) == value;
+		return $(this).data(key).length > 0;
 	});
   };
   $.fn.findByData = function(selector, key, value) {
@@ -12,6 +17,12 @@
   };
   $.fn.for = function(cb) {
   	return this.attr("for", cb.attr("id"));
+  };
+  $.fn.href = function(href) {
+  	if (href) {
+  		return this.attr("href", href)
+  	}
+  	return this.attr("href");
   };
   $.fn.checked = function(ischecked) {
   	if (ischecked === true) {
@@ -28,6 +39,11 @@ String.prototype.remove = function(r) { return this.replace(r, ''); };
 (function() {
 
 	var BetterBird = (function () {
+		var body = $(document.body);
+		var wrapper = $("div.wrapper");
+		var dashboard = $("div.dashboard", wrapper);
+		var birdBlock, searchModule, optionsModule;
+
 		var regex = {
 			scheme: /^http[s]?:\/\/(www\.)*/,
 			trailingid: /\/\d+$/g,
@@ -44,10 +60,10 @@ String.prototype.remove = function(r) { return this.replace(r, ''); };
 			birdblock: "bb-birdblock",
 		};
 
-		var body = $(document.body);
-		var wrapper = $("div.wrapper");
-		var dashboard = $("div.dashboard", wrapper);
-		var birdBlock, searchModule, optionsModule;
+		var datanames = { 
+			originaltext: "bb-originaltext", 
+			originalhref: "bb-originalhref"
+		};
 
 		var applyCss = function (options) {
 			for (var key in options.styles) {
@@ -72,12 +88,19 @@ String.prototype.remove = function(r) { return this.replace(r, ''); };
 			return parts.join('/');
 		};
 
-		var expandUrls = function(scope) {
-			$("a[data-ultimate-url], a[data-expanded-url]", scope).not("a." + classnames.expand).each(function() {
+		var expandUrls = function() {
+			$("a[data-ultimate-url], a[data-expanded-url]").not("a." + classnames.expand).each(function() {
 				var a = $(this);
 				var u = a.data("ultimate-url") || a.data("expanded-url");
-				a.text(abbrevUrl(u)).addClass(classnames.expand);
+				a.data(datanames.originaltext, $(this).text()).text(abbrevUrl(u)).addClass(classnames.expand);
 			});
+		};
+
+		var restoreUrls = function(){
+			$("a." + classnames.expand).filterByData(datanames.originaltext).each(function() {
+				var a = $(this);
+				a.text(a.data(datanames.originaltext)).removeClass(classnames.expand);
+			});			
 		};
 
 		var createModule = function(classname, title, iconurl) {
@@ -125,12 +148,19 @@ String.prototype.remove = function(r) { return this.replace(r, ''); };
 			return searches.length;
 		};
 
-		var removeRedirects = function(scope) {
-			$("a[data-ultimate-url], a[data-expanded-url]", scope).not("a." + classnames.direct).each(function() {
+		var removeRedirects = function() {
+			$("a[data-ultimate-url], a[data-expanded-url]").not("a." + classnames.direct).each(function() {
 				var a = $(this);
 				var u = a.data("ultimate-url") || a.data("expanded-url");
-				a.attr("href", u).addClass(classnames.direct);
+				a.data(datanames.originalhref, $(this).href()).href(u).addClass(classnames.direct);
 			});
+		};
+
+		var restoreRedirects = function(){
+			$("a." + classnames.direct).filterByData(datanames.originalhref).each(function() {
+				var a = $(this);
+				a.href(a.data(datanames.originalhref)).removeClass(classnames.direct);
+			});			
 		};
 
 		var directToProfile = function(scope) {
@@ -141,15 +171,40 @@ String.prototype.remove = function(r) { return this.replace(r, ''); };
 		var createOptionsModule = function() {
 			optionsModule = createModule(classnames.options, "Better Bird settings", chrome.extension.getURL("img/twitter_32.png"));
 
+			addOptionCheckbox("expandurls", "Expand URLs", function(option) {
+				if (option === true) {
+					expandUrls();
+					removeRedirects();
+				} else {
+					restoreUrls();
+					restoreRedirects();
+				}
+			});
 			addStyleOptionCheckbox("columnswitch", "Switch columns");
 			addStyleOptionCheckbox("columnwide", "Widen content");
 			addStyleOptionCheckbox("font", "Use serif font");
 			birdBlock.append(optionsModule);
 		};
 
+		var addOptionCheckbox = function(optionkey, labeltext, callback) {
+			var cb = $("<input type='checkbox'>")
+					 .id("bb-option-" + optionkey).checked(options[optionkey])
+					 .change(function() {
+					 	options[optionkey] = $(this).is(":checked");
+						saveOptions();
+						if (callback) {
+							callback(options[optionkey]);
+						}
+					 });
+			var label = $("<label>").text(labeltext).for(cb);
+			var br = $("<br>")
+			
+			optionsModule.content.append(cb).append(label).append(br);
+		};
+
 		var addStyleOptionCheckbox = function(optionkey, labeltext) {
 			var cb = $("<input type='checkbox'>")
-					 .id("bb-option-" + optionkey).checked(options.styles[optionkey])
+					 .id("bb-option-style-" + optionkey).checked(options.styles[optionkey])
 					 .change(function() {
 					 	options.styles[optionkey] = $(this).is(":checked");
 						body.toggleClass(classnames[optionkey], options.styles[optionkey]);
@@ -189,8 +244,8 @@ String.prototype.remove = function(r) { return this.replace(r, ''); };
 						urlinterval = setInterval(function() {
 							var stream = $("div.stream");
 							if (options.expandurls) {
-								expandUrls(stream);
-								removeRedirects(stream);
+								expandUrls();
+								removeRedirects();
 							}
 							if (options.directtoprofile) {
 								directToProfile(stream);
