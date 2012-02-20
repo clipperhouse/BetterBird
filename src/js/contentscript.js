@@ -140,11 +140,11 @@ String.prototype.remove = function(r) { return this.replace(r, ''); };
 
 			addStyleOptionCheckbox("columnswitch", "Switch columns");
 			addStyleOptionCheckbox("columnwide", "Widen content");
-
+			addStyleOptionCheckbox("font", "Use serif font");
 			birdBlock.append(optionsModule);
 		};
 
-		var addStyleOptionCheckbox = function(optionkey, labeltext, iconurl) {
+		var addStyleOptionCheckbox = function(optionkey, labeltext) {
 			var cb = $("<input type='checkbox'>")
 					 .id("bb-option-" + optionkey).checked(options.styles[optionkey])
 					 .change(function() {
