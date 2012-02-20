@@ -33,6 +33,10 @@ body.bb-font {
 	font: 15px/19px Georgia,serif;
 }
 
+body.bb-font label, body.bb-font input, body.bb-font textarea, body.bb-font select, body.bb-font button {
+	font: 13px/20px Georgia,serif;
+}
+
 
 div.bb-birdblock label {
 	display: inline-block;

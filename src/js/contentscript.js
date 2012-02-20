@@ -95,7 +95,7 @@ String.prototype.remove = function(r) { return this.replace(r, ''); };
 		var getSavedSearches = function () {
 			if (searchModule === undefined) {
 				searchModule = createModule(classnames.savedsearch, "Saved Searches", chrome.extension.getURL("img/twitter_32.png"));
-				birdBlock.append(searchModule);
+				birdBlock.append(searchModule.hide());
 			}
 
 			var updateSavedSearch = function (q, count) {
@@ -109,16 +109,19 @@ String.prototype.remove = function(r) { return this.replace(r, ''); };
 			};
 
 			var searches = $("div.typeahead-items > ul > li > a");
-			searches.each(function () {
-				var a = $(this);
-				var q = a.data("search-query");
-				console.log(q);
+			if (searches.length > 0) {
+				searches.each(function () {
+					var a = $(this);
+					var q = a.data("search-query");
+					console.log(q);
 
-				var url = "http://search.twitter.com/search.json?q=" + encodeURIComponent(q);
-				$.getJSON(url, function (response) {
-					updateSavedSearch(q, response.results.length);
+					var url = "http://search.twitter.com/search.json?q=" + encodeURIComponent(q);
+					$.getJSON(url, function (response) {
+						updateSavedSearch(q, response.results.length);
+					});
 				});
-			});
+				searchModule.show();
+			}
 			return searches.length;
 		};
 
