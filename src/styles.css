@@ -25,7 +25,7 @@ body.bb-columnwide div.global-nav div.container {
 }
 
 body.bb-columnwide div.tweet p {
-	width:92%;
+	width: 92%;
 }
 
 
@@ -35,5 +35,22 @@ body.bb-fontgeorgia {
 
 body.bb-fontverdana {
 	font: 15px/19px Verdana,sans-serif;
+}
+
+
+div.bb-birdblock label {
+	display: inline-block;
+}
+
+div.bb-birdblock input[type=checkbox] + label {
+	margin-left: 5px;
+	cursor: pointer;
+}
+
+div.bb-birdblock img.bb-icon {
+	float: right;
+	width:20px;
+	height:20px;
+	opacity:.5;
 }
 
