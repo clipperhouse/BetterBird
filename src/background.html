@@ -1,44 +1,56 @@
 <html>
+<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
 <script>
 //React when a browser action's icon is clicked.
 chrome.browserAction.onClicked.addListener(function(tab) {
-   chrome.tabs.query({ url : "*://twitter.com/*" }, function (tabs) {
-      var tabid;
-      if (tabs.length) {
-         tabid = tabs[0].id;
-         chrome.tabs.update(tabid, { active: true });
-         chrome.tabs.sendRequest(tabid, "go-home");
-     } else {
-         chrome.tabs.create({ url : "http://twitter.com" }, function(tab) {
-            tabid = tab.id;
-        });
-    }
-});
+    chrome.tabs.query({ url : "*://twitter.com/*" }, function (tabs) {
+        var tabid;
+        if (tabs.length) {
+            tabid = tabs[0].id;
+            chrome.tabs.update(tabid, { active: true });
+            chrome.tabs.sendRequest(tabid, "go-home");
+        } else {
+            chrome.tabs.create({ url : "http://twitter.com" }, function(tab) {
+                tabid = tab.id;
+            });
+        }
+    });
 });
 
-var currentversion = "0.1";
+var currentversion = "0.3";
 var optionskey = "options";
 var defaultoptions = {
     version: currentversion,
     styles: {
         columnswitch: true,
         columnwide: true,
-        font: true
+        font: false,
+        hidewho: false,
+        hidetrends: false
     },
     expandurls: true,
     directtoprofile: true,
     savedsearches: true
 };
 
-var loadOptions = function () {                             // TODO: version migration if not current
-    var options = localStorage[optionskey];
-    if (options) {
-        return JSON.parse(options);
-    }
-    return defaultoptions;
+var migrateOptionsToCurrent = function (o) {    // yes, crude
 };
 
-var saveOptions = function (options) {                      // TODO: version migration if not current
+var loadOptions = function () {
+    var options = {};
+    var optionsjson = localStorage[optionskey];
+    if (optionsjson) {
+        options = JSON.parse(optionsjson);
+    }
+
+    if (options.version != defaultoptions.version) {
+        return $.extend(true, options, defaultoptions);      // deal with version changes over time
+    }
+
+    return options;
+};
+
+var saveOptions = function (options) {
     localStorage[optionskey] = JSON.stringify(options);
     return true;
 };

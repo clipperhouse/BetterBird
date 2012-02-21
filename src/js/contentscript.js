@@ -57,7 +57,7 @@ String.prototype.remove = function(r) { return this.replace(r, ''); };
 			direct: "bb-direct", 
 			savedsearch: "bb-saved-search",
 			options: "bb-options",
-			birdblock: "bb-birdblock",
+			birdblock: "bb-birdblock"
 		};
 
 		var datanames = { 
@@ -125,7 +125,7 @@ String.prototype.remove = function(r) { return this.replace(r, ''); };
 				var datakey = "search-query";
 				var a = searchModule.content.findByData("a", datakey, q);
 				if (a.length == 0) {
-					a = $("<a>").data(datakey, q).attr("href", "#!/search/" + encodeURIComponent(q));
+					a = $("<a>").data(datakey, q).attr("href", "/search/" + encodeURIComponent(q));
 					searchModule.content.append($("<p>").append(a));
 				}
 				a.text(q + " (" + count + ")");
@@ -136,7 +136,6 @@ String.prototype.remove = function(r) { return this.replace(r, ''); };
 				searches.each(function () {
 					var a = $(this);
 					var q = a.data("search-query");
-					console.log(q);
 
 					var url = "http://search.twitter.com/search.json?q=" + encodeURIComponent(q);
 					$.getJSON(url, function (response) {
@@ -183,6 +182,8 @@ String.prototype.remove = function(r) { return this.replace(r, ''); };
 			addStyleOptionCheckbox("columnswitch", "Switch columns");
 			addStyleOptionCheckbox("columnwide", "Widen content");
 			addStyleOptionCheckbox("font", "Use serif font");
+			addStyleOptionCheckbox("hidewho", "Hide “Who to follow”");
+			addStyleOptionCheckbox("hidetrends", "Hide “Trends”");
 			birdBlock.append(optionsModule);
 		};
 
@@ -224,7 +225,6 @@ String.prototype.remove = function(r) { return this.replace(r, ''); };
 		var options;
 		var saveOptions = function() {
 			chrome.extension.sendRequest({ type: "save-options", options: options }, function() {
-				console.log("Saved options");
 			});
 		};
 
@@ -261,6 +261,10 @@ String.prototype.remove = function(r) { return this.replace(r, ''); };
 						}
 						createOptionsModule();
 					}, 1500);
+
+					setInterval(function() {
+						$("div.module.trends").removeAttr("style");	// pesky thing comes in late with display:block
+					}, 3000);
 				});
 			}			
 		};

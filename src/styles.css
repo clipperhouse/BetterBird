@@ -28,9 +28,17 @@ body.bb-columnwide div.tweet p {
 	width: 92%;
 }
 
+body.bb-hidewho div[data-component-term='user_recommendations'] {
+	display:none;
+}
+
+body.bb-hidetrends div.module.trends {
+	display:none;	
+}
+
 
 body.bb-font {
-	font: 15px/19px Georgia,serif;
+	font: 15px/20px Georgia,serif;
 }
 
 body.bb-font label, body.bb-font input, body.bb-font textarea, body.bb-font select, body.bb-font button {
