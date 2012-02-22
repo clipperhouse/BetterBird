@@ -46,6 +46,10 @@ body.bb-font label, body.bb-font input, body.bb-font textarea, body.bb-font sele
 }
 
 
+div.bb-birdblock h3 {
+	margin-bottom:10px;
+}
+
 div.bb-birdblock label {
 	display: inline-block;
 }

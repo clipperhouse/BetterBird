@@ -1,20 +1,30 @@
 <html>
 <script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
 <script>
-//React when a browser action's icon is clicked.
-chrome.browserAction.onClicked.addListener(function(tab) {
-    chrome.tabs.query({ url : "*://twitter.com/*" }, function (tabs) {
-        var tabid;
+
+var findTab = function(callback) {
+    chrome.tabs.query({ url : "*://twitter.com/*" }, callback);  
+};
+
+var firstRun = function() {
+    findTab(function(tabs) {
         if (tabs.length) {
-            tabid = tabs[0].id;
-            chrome.tabs.update(tabid, { active: true });
-            chrome.tabs.sendRequest(tabid, "go-home");
+            chrome.tabs.update(tabs[0].id, { url: "http://twitter.com", active: true });
         } else {
-            chrome.tabs.create({ url : "http://twitter.com" }, function(tab) {
-                tabid = tab.id;
-            });
+            chrome.tabs.create({ url: "http://twitter.com" });
         }
-    });
+    });  
+};
+
+firstRun();
+chrome.browserAction.onClicked.addListener(function() {
+    findTab(function(tabs) {
+        if (tabs.length) {
+            chrome.tabs.update(tabs[0].id, { active: true });
+        } else {
+            chrome.tabs.create({ url: "http://twitter.com" });
+        }
+    });  
 });
 
 var currentversion = "0.3";

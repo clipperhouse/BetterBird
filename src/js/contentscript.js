@@ -46,7 +46,7 @@ String.prototype.remove = function(r) { return this.replace(r, ''); };
 
 		var regex = {
 			scheme: /^http[s]?:\/\/(www\.)*/,
-			trailingid: /\/\d+$/g,
+			trailingid: /\/[\d\/]+$/g,
 			trailing: /[\/\-\.\s]$/,
 			fileext: /(.html|.php|.aspx)/i,
 			querystring: /\?.*$/,
@@ -109,7 +109,7 @@ String.prototype.remove = function(r) { return this.replace(r, ''); };
 				h.prepend($("<img>").addClass("bb-icon").attr("src", iconurl));
 			}
 			var f = $("<div class='flex-module' />").append(h);
-			var m = $("<div class='module' />").addClass(classname).css("background-color", "#fff").append(f);
+			var m = $("<div class='module' />").addClass(classname).append(f);
 			m.content = f;
 			m.title = h;
 			return m;
