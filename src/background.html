@@ -6,7 +6,7 @@ var findTab = function(callback) {
     chrome.tabs.query({ url : "*://twitter.com/*" }, callback);  
 };
 
-var firstRun = function() {
+function onInstall() {
     findTab(function(tabs) {
         if (tabs.length) {
             chrome.tabs.update(tabs[0].id, { url: "http://twitter.com", active: true });
@@ -14,9 +14,29 @@ var firstRun = function() {
             chrome.tabs.create({ url: "http://twitter.com" });
         }
     });  
-};
+}
 
-firstRun();
+function onUpdate() {
+    onInstall();
+}
+
+function getVersion() {
+    var details = chrome.app.getDetails();
+    return details.version;
+}
+
+// Check if the version has changed.
+var currVersion = getVersion();
+var prevVersion = localStorage['version']
+if (currVersion != prevVersion) {
+    if (typeof prevVersion == 'undefined') {
+      onInstall();
+    } else {
+      onUpdate();
+    }
+    localStorage['version'] = currVersion;
+}
+
 chrome.browserAction.onClicked.addListener(function() {
     findTab(function(tabs) {
         if (tabs.length) {
