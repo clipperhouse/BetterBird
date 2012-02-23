@@ -35,9 +35,9 @@
 })(jQuery);
 
 String.prototype.remove = function(r) { return this.replace(r, ''); };
+String.prototype.removePrefix = function(r) { return this.remove(/^bb\-/); };
 
 (function() {
-
 	var BetterBird = (function () {
 		var body = $(document.body);
 		var wrapper = $("div.wrapper");
@@ -55,9 +55,10 @@ String.prototype.remove = function(r) { return this.replace(r, ''); };
 		var classnames = { 
 			expand: "bb-expand", 
 			direct: "bb-direct", 
-			savedsearch: "bb-saved-search",
+			savedsearch: "bb-savedsearch",
 			options: "bb-options",
-			birdblock: "bb-birdblock"
+			birdblock: "bb-birdblock",
+			content: "bb-content"
 		};
 
 		var datanames = { 
@@ -104,13 +105,22 @@ String.prototype.remove = function(r) { return this.replace(r, ''); };
 		};
 
 		var createModule = function(classname, title, iconurl) {
-			var h = $("<h3 />").css("margin-bottom", "10px").text(title);
+			var h = $("<h3>").text(title).attr("title", "Click to expand or hide");
 			if (iconurl) {
 				h.prepend($("<img>").addClass("bb-icon").attr("src", iconurl));
 			}
-			var f = $("<div class='flex-module' />").append(h);
+			var d = $("<div>").addClass(classnames.content).toggle(!options.collapse[classname.removePrefix()]);
+			var f = $("<div class='flex-module' />").append(h).append(d);
 			var m = $("<div class='module' />").addClass(classname).append(f);
-			m.content = f;
+
+			h.click(function(){
+				d.slideToggle("fast", function () {
+					options.collapse[classname.removePrefix()] = !$(this).is(":visible");
+					saveOptions();
+				});				
+			}).addClass("pointer");
+
+			m.content = d;
 			m.title = h;
 			return m;
 		};
@@ -169,7 +179,7 @@ String.prototype.remove = function(r) { return this.replace(r, ''); };
 
 		var createOptionsModule = function() {
 			optionsModule = createModule(classnames.options, "Better Bird settings", chrome.extension.getURL("img/twitter_32.png"));
-
+			
 			addOptionCheckbox("expandurls", "Expand URLs", function(option) {
 				if (option === true) {
 					expandUrls();
@@ -224,8 +234,7 @@ String.prototype.remove = function(r) { return this.replace(r, ''); };
 
 		var options;
 		var saveOptions = function() {
-			chrome.extension.sendRequest({ type: "save-options", options: options }, function() {
-			});
+			chrome.extension.sendRequest({ type: "save-options", options: options });
 		};
 
 		var urlinterval, searchinterval;
@@ -271,14 +280,4 @@ String.prototype.remove = function(r) { return this.replace(r, ''); };
 	})();
 
 	BetterBird.Init();
-
-	chrome.extension.onRequest.addListener(function(request) {
-		switch(request) {
-			case "go-home":
-			  document.location.href = $("li#global-nav-home > a").attr("href");
-			  $("div.new-tweets-bar").click();
-			break;
-			default:			  
-		}
-	});
 })()
