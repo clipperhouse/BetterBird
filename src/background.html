@@ -75,7 +75,7 @@ var loadOptions = function () {
     }
 
     if (options.version != defaultoptions.version) {
-        return $.extend(true, options, defaultoptions);      // deal with version changes over time
+        return $.extend(true, defaultoptions, options);      // deal with version changes over time
     }
 
     return options;
