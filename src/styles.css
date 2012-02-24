@@ -11,6 +11,15 @@ body.bb-columnswitch div.dashboard {
 	float:right;
 }
 
+body.bb-columnswitch div.module i.chev-right {
+	right: auto;
+	-webkit-transform: scaleX(-1);
+	left: 12px;
+}
+
+body.bb-columnswitch  div.module a.list-link {
+	padding-left: 30px;
+}
 
 body.bb-columnwide div.wrapper {
 	width:987px;
