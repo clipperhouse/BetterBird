@@ -136,7 +136,7 @@ String.prototype.removePrefix = function(r) { return this.remove(/^bb\-/); };
 				var datakey = "search-query";
 				var a = searchModule.content.findByData("a", datakey, q);
 				if (a.length == 0) {
-					a = $("<a>").data(datakey, q).attr("href", "/search/" + encodeURIComponent(q));
+					a = $("<a>").data(datakey, q).attr("href", "/#!/search/" + encodeURIComponent(q));
 					searchModule.content.append($("<p>").append(a));
 				}
 				a.text(q + " (" + count + ")");
