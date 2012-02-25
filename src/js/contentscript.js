@@ -42,7 +42,7 @@ String.prototype.removePrefix = function(r) { return this.remove(/^bb\-/); };
 		var body = $(document.body);
 		var wrapper = $("div.wrapper");
 		var dashboard = $("div.dashboard", wrapper);
-		var birdBlock, searchModule, optionsModule;
+		var birdBlock, mentionsModule, searchModule, optionsModule;
 
 		var regex = {
 			scheme: /^http[s]?:\/\/(www\.)*/,
@@ -58,7 +58,8 @@ String.prototype.removePrefix = function(r) { return this.remove(/^bb\-/); };
 			savedsearch: "bb-savedsearch",
 			options: "bb-options",
 			birdblock: "bb-birdblock",
-			content: "bb-content"
+			content: "bb-content",
+			mentions: "bb-mentions"
 		};
 
 		var datanames = { 
@@ -107,7 +108,7 @@ String.prototype.removePrefix = function(r) { return this.remove(/^bb\-/); };
 		var createModule = function(classname, title, iconurl) {
 			var h = $("<h3>").text(title).attr("title", "Click to expand or hide");
 			if (iconurl) {
-				h.prepend($("<img>").addClass("bb-icon").attr("src", iconurl));
+				h.append($("<img>").addClass("bb-icon").attr("src", iconurl));
 			}
 			var d = $("<div>").addClass(classnames.content).toggle(!options.collapse[classname.removePrefix()]);
 			var f = $("<div class='flex-module' />").append(h).append(d);
@@ -153,6 +154,40 @@ String.prototype.removePrefix = function(r) { return this.remove(/^bb\-/); };
 					});
 				});
 				searchModule.show();
+			}
+			return searches.length;
+		};
+
+		var getMentions = function () {
+			var datakey = "screen-name";
+			if (mentionsModule === undefined) {
+				mentionsModule = createModule(classnames.mentions, "@Mentions", chrome.extension.getURL("img/twitter_32.png"));
+				birdBlock.append(mentionsModule.hide());
+			}
+
+			var updateMentions = function (q, count) {
+				var a = mentionsModule.content.findByData("a", datakey, q);
+				if (a.length == 0) {
+					a = $("<a>").data(datakey, q).attr("href", "/mentions");
+					mentionsModule.content.append($("<p>").append(a));
+				}
+				a.text(q.replace('@', '') + " (" + count + ")");
+			};
+
+			var searches = $("a.account-summary div.account-group");
+			console.log(searches);
+
+			if (searches.length > 0) {
+				searches.each(function () {
+					var d = $(this);
+					var q = "@" + d.data(datakey);
+
+					var url = "http://search.twitter.com/search.json?q=" + encodeURIComponent(q);
+					$.getJSON(url, function (response) {
+						updateMentions(q, response.results.length);
+					});
+				});
+				mentionsModule.show();
 			}
 			return searches.length;
 		};
@@ -237,12 +272,14 @@ String.prototype.removePrefix = function(r) { return this.remove(/^bb\-/); };
 			chrome.extension.sendRequest({ type: "save-options", options: options });
 		};
 
-		var urlinterval, searchinterval;
+		var urlinterval, searchinterval, mentionsinterval;
 
 		return {
 			Init: function() {
 				clearInterval(urlinterval);
 				clearInterval(searchinterval);
+				clearInterval(mentionsinterval);
+				var numsearches = 0, nummentions = 0;
 
 				chrome.extension.sendRequest({ "type": "load-options" }, function (response) {
 					options = response;
@@ -260,15 +297,29 @@ String.prototype.removePrefix = function(r) { return this.remove(/^bb\-/); };
 								directToProfile(stream);
 							}
 						}, 1500);
+						if (options.mentions) {
+							nummentions = getMentions();
+						}
 						if (options.savedsearches) {
-							var numsearches = getSavedSearches();
+							numsearches = getSavedSearches();
+						}
+						createOptionsModule();
+
+						setTimeout(function() {
+							var searchtime = 60 * 60 * 1000 * (numsearches + nummentions) / 150;	// rate-limit
+							if (nummentions > 0) {
+								mentionsinterval = setInterval(function(){
+									getMentions();
+								}, searchtime);
+							}
+
 							if (numsearches > 0) {
 								searchinterval = setInterval(function(){
 									getSavedSearches();
-								}, 60 * 60 * 1000 * numsearches / 150);
+								}, searchtime);
 							}
-						}
-						createOptionsModule();
+						}, 10000);
+
 					}, 1500);
 
 					setInterval(function() {
