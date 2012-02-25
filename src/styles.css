@@ -55,6 +55,17 @@ body.bb-font label, body.bb-font input, body.bb-font textarea, body.bb-font sele
 }
 
 
+div.bb-birdblock small.bb-notify {
+	color: #f3a009;
+}
+
+div.bb-birdblock small {
+	display: inline-block;
+	margin-left: 8px;
+	line-height:100%;
+}
+
+
 div.bb-birdblock h3 {
 	margin-bottom:0;
 }

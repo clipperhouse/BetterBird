@@ -88,6 +88,17 @@ var saveOptions = function (options) {
     return true;
 };
 
+var doSearch = function(q, callback){
+    var storagekey = "refreshurl." + q;
+    var qs = localStorage[storagekey] || "?q=" + encodeURIComponent(q);
+    var url = "http://search.twitter.com/search.json" + qs;
+    console.log(qs);
+    $.getJSON(url, function (response) {
+        localStorage[storagekey] = response.refresh_url;
+        callback(response);
+    });
+};
+
 chrome.extension.onRequest.addListener(function(request, sender, callback) {
     switch(request.type) {
         case "load-options":
@@ -95,6 +106,9 @@ chrome.extension.onRequest.addListener(function(request, sender, callback) {
             break;
         case "save-options":
             callback({ success: saveOptions(request.options) });
+            break;
+        case "do-search":
+            doSearch(request.q, callback);
             break;
         default:
     }
