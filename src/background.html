@@ -90,9 +90,8 @@ var saveOptions = function (options) {
 
 var doSearch = function(q, callback){
     var storagekey = "refreshurl." + q;
-    var qs = localStorage[storagekey] || "?q=" + encodeURIComponent(q);
+    var qs = localStorage[storagekey] || "?q=" + encodeURIComponent(q) + "&rpp=100";
     var url = "http://search.twitter.com/search.json" + qs;
-    console.log(qs);
     $.getJSON(url, function (response) {
         localStorage[storagekey] = response.refresh_url;
         callback(response);
