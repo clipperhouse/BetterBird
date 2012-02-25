@@ -78,6 +78,9 @@ div.bb-birdblock h3 + div {
 	padding-top:10px;
 }
 
+div.bb-birdblock p {
+	line-height:19px;
+}
 
 div.bb-birdblock label {
 	display: inline-block;

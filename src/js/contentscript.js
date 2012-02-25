@@ -49,8 +49,16 @@ var bb_datanames = {
   		return this.removeAttr("checked", "checked");
   	}
   };
+
+  var newNotifier = function(){
+  	return $("<small>").addClass(bb_classnames.notify).data(bb_datanames.count, 0);
+  };
+
   $.fn.addNotifier = function() {
-  	return this.after($("<small>").addClass(bb_classnames.notify).data(bb_datanames.count, 0));
+  	return this.after(newNotifier());
+  };
+  $.fn.appendNotifier = function() {
+  	return this.append(newNotifier());
   };
   $.fn.getNotifier = function() {
   	return this.next("small." + bb_classnames.notify);
@@ -140,7 +148,7 @@ String.prototype.removePrefix = function(r) { return this.remove(/^bb\-/); };
 		var getSavedSearches = function () {
 			if (searchModule === undefined) {
 				searchModule = createModule(bb_classnames.savedsearch, "Saved Searches", chrome.extension.getURL("img/twitter_32.png"));
-				searchModule.title.append($("<small>").addClass(bb_classnames.notify));
+				searchModule.title.appendNotifier();
 				birdBlock.append(searchModule.hide());
 			}
 
@@ -152,7 +160,7 @@ String.prototype.removePrefix = function(r) { return this.remove(/^bb\-/); };
 						.text(q)
 						.click(function(){
 							$(this).getNotifier().text("").data(bb_datanames.count, 0);
-							updateSavedSearchNotifier();
+							updateModuleNotifier(searchModule);
 						})
 						.addNotifier();
 					searchModule.content.append($("<p>").append(a));
@@ -162,7 +170,7 @@ String.prototype.removePrefix = function(r) { return this.remove(/^bb\-/); };
 				if (newcount > 0) {
 					notifier.text(newcount + " new");
 				}
-				updateSavedSearchNotifier();
+				updateModuleNotifier(searchModule);
 			};
 
 			var searches = $("div.typeahead-items > ul > li > a");
@@ -179,13 +187,13 @@ String.prototype.removePrefix = function(r) { return this.remove(/^bb\-/); };
 			return searches.length;
 		};
 
-		var updateSavedSearchNotifier = function (){
-			var notifiers = searchModule.content.find("small." + bb_classnames.notify);
+		var updateModuleNotifier = function (module) {
+			var notifiers = module.content.find("small." + bb_classnames.notify);
 			var total = 0;
 			notifiers.each(function(){
 				total += $(this).data(bb_datanames.count);
 			});
-			var notifier = searchModule.title.find("small");
+			var notifier = module.title.find("small");
 			if (total > 0) {
 				notifier.text(total + " new");
 			} else {
@@ -197,17 +205,27 @@ String.prototype.removePrefix = function(r) { return this.remove(/^bb\-/); };
 			var datakey = "screen-name";
 			if (mentionsModule === undefined) {
 				mentionsModule = createModule(bb_classnames.mentions, "@Mentions", chrome.extension.getURL("img/twitter_32.png"));
-				mentionsModule.title.append($("<small>").addClass(bb_classnames.notify));
+				mentionsModule.title.appendNotifier();
 				birdBlock.append(mentionsModule.hide());
 			}
 
 			var updateMentions = function (q, count) {
 				var a = mentionsModule.content.findByData("a", datakey, q);
 				if (a.length == 0) {
-					a = $("<a>").data(datakey, q).href("/#!/mentions");
+					a = $("<a>").data(datakey, q).href("/#!/mentions").text(q.remove('@'))
+						.click(function(){
+							$(this).getNotifier().text("").data(bb_datanames.count, 0);
+							updateModuleNotifier(mentionsModule);
+						})
+						.addNotifier();;
 					mentionsModule.content.append($("<p>").append(a));
 				}
-				a.text(q.remove('@') + " (" + count + ")");
+				var notifier = a.getNotifier().incrementData(bb_datanames.count, count);
+				var newcount = notifier.data(bb_datanames.count);
+				if (newcount > 0) {
+					notifier.text(newcount + " new");
+				}
+				updateModuleNotifier(mentionsModule);
 			};
 
 			var searches = $("a.account-summary div.account-group");
