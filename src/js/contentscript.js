@@ -168,7 +168,7 @@ String.prototype.removePrefix = function(r) { return this.remove(/^bb\-/); };
 			var updateMentions = function (q, count) {
 				var a = mentionsModule.content.findByData("a", datakey, q);
 				if (a.length == 0) {
-					a = $("<a>").data(datakey, q).attr("href", "/mentions");
+					a = $("<a>").data(datakey, q).attr("href", "/#!/mentions");
 					mentionsModule.content.append($("<p>").append(a));
 				}
 				a.text(q.replace('@', '') + " (" + count + ")");
