@@ -524,6 +524,7 @@
 			    switch(request.type) {
 			        case "go-home":
 			            document.location.href = $("li#global-nav-home > a").href();
+			            scroll(0,0);
 			            break;
 			        default:
 			    }
