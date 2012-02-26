@@ -310,7 +310,7 @@
 		if (searches.length > 0) {
 			searches.each(function () {
 				var d = $(this);
-				var q = "@aplusk";	// + d.data(datakey);
+				var q = d.data(datakey);
 
 				chrome.extension.sendRequest({ type: "do-search", q: q }, function(response) {
 					updateMentions(q, response);
