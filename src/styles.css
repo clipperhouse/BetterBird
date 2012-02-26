@@ -90,10 +90,14 @@ div.bb-birdblock input[type=checkbox] + label {
 
 div.bb-birdblock img.bb-icon {
 	float: right;
-	width:20px;
-	height:20px;
-	opacity:.5;
+	width: 20px;
+	height: 20px;
+	opacity: 0.5;
 	position: relative;
-	top:-3px;
+	top: -3px;
+	-webkit-transition: opacity 0.3s linear;
 }
 
+div.bb-birdblock img.bb-icon.bb-notify {
+	opacity: 1;
+}

@@ -43,6 +43,12 @@
 	  	}
 	  	return this.attr("href");
 	  };
+	  $.fn.src = function(src) {
+	  	if (src) {
+	  		return this.attr("src", src)
+	  	}
+	  	return this.attr("src");
+	  };
 	  $.fn.checked = function(ischecked) {
 	  	if (ischecked === true) {
 	  		return this.attr("checked", "checked");
@@ -91,6 +97,11 @@
 		querystring: /\?.*$/,
 	};
 
+	var iconUrls = {
+		default: chrome.extension.getURL("img/twitter_32.png"),
+		notify: chrome.extension.getURL("img/twitter_32_notify.png")
+	};
+
 	var applyCss = function (options) {
 		for (var key in options.styles) {
 			bb_classnames[key] = "bb-" + key;
@@ -131,8 +142,10 @@
 
 	var createModule = function(classname, title, iconurl) {
 		var h = $("<h3>").text(title).attr("title", "Click to expand or hide");
+		var img;
 		if (iconurl) {
-			h.append($("<img>").addClass("bb-icon").attr("src", iconurl));
+			img = $("<img>").addClass("bb-icon").src(iconurl);
+			h.append(img);
 		}
 		var d = $("<div>").addClass(bb_classnames.content).toggle(!options.collapse[classname.removePrefix()]);
 		var f = $("<div class='flex-module' />").append(h).append(d);
@@ -147,6 +160,7 @@
 
 		m.content = d;
 		m.title = h;
+		m.icon = img;
 		return m;
 	};
 
@@ -167,8 +181,10 @@
 		var notifier = module.title.find("small");
 		if (total > 0) {
 			notifier.text(total + " new");
+			module.icon.addClass(bb_classnames.notify).src(iconUrls.notify);
 		} else {
 			notifier.text("");
+			module.icon.removeClass(bb_classnames.notify).src(iconUrls.default);
 		}
 		return total;
 	};
@@ -189,7 +205,7 @@
 
 	var getSavedSearches = function () {
 		if (searchModule === undefined) {
-			searchModule = createModule(bb_classnames.savedsearch, "Saved Searches", chrome.extension.getURL("img/twitter_32.png"));
+			searchModule = createModule(bb_classnames.savedsearch, "Saved Searches", iconUrls.default);
 			searchModule.title.appendNotifier();
 			birdBlock.append(searchModule.hide());
 		}
@@ -236,7 +252,7 @@
 	var getMentions = function () {
 		var datakey = "screen-name";
 		if (mentionsModule === undefined) {
-			mentionsModule = createModule(bb_classnames.mentions, "@Mentions", chrome.extension.getURL("img/twitter_32.png"));
+			mentionsModule = createModule(bb_classnames.mentions, "@Mentions", iconUrls.default);
 			mentionsModule.title.appendNotifier();
 			birdBlock.append(mentionsModule.hide());
 		}
