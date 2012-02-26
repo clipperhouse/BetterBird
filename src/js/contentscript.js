@@ -9,7 +9,8 @@
 		birdblock: "bb-birdblock",
 		content: "bb-content",
 		mentions: "bb-mentions",
-		notify: "bb-notify"
+		notify: "bb-notify",
+		clear: "bb-clear"
 	};
 
 	var bb_datanames = { 
@@ -32,30 +33,33 @@
 	  $.fn.findByData = function(selector, key, value) {
 	  	return this.find(selector).filterByData(key, value);
 	  };
-	  $.fn.id = function(id) {
-	  	return this.attr("id", id);
+
+	  var attributeFn = function(j, name, value) {
+	  	if (value) {
+	  		return j.attr(name, value)
+	  	}
+	  	return j.attr(name);
 	  };
-	  $.fn.for = function(cb) {
-	  	return this.attr("for", cb.attr("id"));
+
+	  $.fn.id = function(id) {
+	  	return attributeFn(this, "id", id);	  	
 	  };
 	  $.fn.href = function(href) {
-	  	if (href) {
-	  		return this.attr("href", href)
-	  	}
-	  	return this.attr("href");
+	  	return attributeFn(this, "href", href);	  	
 	  };
+
 	  $.fn.src = function(src) {
-	  	if (src) {
-	  		return this.attr("src", src)
-	  	}
-	  	return this.attr("src");
+	  	return attributeFn(this, "src", src);	  	
 	  };
-	  $.fn.title = function(title) {
-	  	if (title) {
-	  		return this.attr("title", title)
-	  	}
-	  	return this.attr("title");
+
+  	  $.fn.title = function(title) {
+	  	return attributeFn(this, "title", title);	  	
 	  };
+
+  	  $.fn.for = function(fr) {
+	  	return attributeFn(this, "for", fr);	  	
+	  };
+
 	  $.fn.checked = function(ischecked) {
 	  	if (ischecked === true) {
 	  		return this.attr("checked", "checked");
@@ -69,26 +73,30 @@
 	  	return this.find("." + classname);
 	  };
 
-	  var newNotifier = function(clearonclick, onclear){
+	  var newNotifier = function(){
 	  	var s = $("<small>").addClass(bb_classnames.notify).data(bb_datanames.count, 0);
-
-	  	if (clearonclick) {
-	  		s.click(function(){
-		  		$(this).text("").data(bb_datanames.count, 0);
-		  		if (onclear) {
-		  			onclear();
-		  		}
-		  	});
-	  	}
 	  	return s;	  	
 	  };
 
-	  $.fn.addNotifier = function(onclear) {
-	  	return this.after(newNotifier(true, onclear));
+	  $.fn.addNotifier = function() {
+	  	return this.after(newNotifier());
 	  };
-	  $.fn.appendNotifier = function(onclear) {
-	  	return this.append(newNotifier(false, onclear));
+
+	  $.fn.appendNotifier = function() {
+	  	return this.append(newNotifier());
 	  };
+
+	  $.fn.appendClear = function(f) {	  	
+	  	if (f) {
+	  		var c = $("<a>").addClass(bb_classnames.clear).text("Clear").click(function(){
+	  			f();
+	  			return false;
+	  		});
+	  		return this.append(" &nbsp; ").append(c);
+	  	}
+	  	return this;
+	  };
+
 	  $.fn.getNotifier = function() {
 	  	var selector = "small." + bb_classnames.notify;
 	  	var find = this.find(selector);
@@ -180,10 +188,7 @@
 
 		var img;
 		if (iconurl) {
-			img = $("<img>").addClass("bb-icon").src(iconurl).title("Click to clear notifications").click(function(){
-				m.clearAllNotifiers();
-				return false;
-			});
+			img = $("<img>").addClass("bb-icon").src(iconurl);
 			h.append(img);
 		}
 
@@ -199,10 +204,12 @@
 			});
 			var notifier = m.title.getNotifier();
 			if (total > 0) {
-				notifier.text(total + " new").data(bb_datanames.count, total);
+				notifier.text(total + " new").data(bb_datanames.count, total)
+					.appendClear(m.clearAllNotifiers)
+					.fadeIn("fast");
 				m.icon.addClass(bb_classnames.notify).src(iconUrls.notify);
 			} else {
-				notifier.text("").data(bb_datanames.count, 0);
+				notifier.fadeOut("fast").html("").data(bb_datanames.count, 0);
 				m.icon.removeClass(bb_classnames.notify).src(iconUrls.default);
 			}
 			updateBrowserIcon();
@@ -216,24 +223,37 @@
 			m.updateTitleNotifier();
 		};
 
+		m.hover(
+			function(){
+				$(this).findByClass(bb_classnames.clear).fadeIn("fast");
+			}, 
+			function(){
+				$(this).findByClass(bb_classnames.clear).fadeOut("fast");
+			}
+		);
+
 		bb_modules.push(m);
 		return m;
 	};
 
-	var updateBrowserIcon = function() {
+	var updateBrowserIcon = function(clear) {
+		if (clear) {
+			chrome.extension.sendRequest({ type: "set-icon", notify: false });
+			return;
+		}
 		var total = 0;
 		bb_modules.forEach(function(module) {
 			module.title.getNotifier().each(function() {
 				total += $(this).data(bb_datanames.count);
 			});
 		});
-		chrome.extension.sendRequest({ type: "set-icon", notify: total > 0 });
+		chrome.extension.sendRequest({ type: "set-icon", notify: clear || total > 0 });
 	};
 
 	var getSavedSearches = function () {
 		if (searchModule === undefined) {
 			searchModule = createModule(bb_classnames.savedsearch, "Saved Searches", iconUrls.default);
-			searchModule.title.appendNotifier();
+			searchModule.title.appendNotifier(searchModule.clearAllNotifiers);
 			birdBlock.append(searchModule.hide());
 		}
 
@@ -244,13 +264,7 @@
 			var a = searchModule.content.findByData("a", datakey, q);
 			if (a.length == 0) {
 				a = $("<a>").data(datakey, q).href("/#!/search/" + encodeURIComponent(q)).text(q)
-					.addNotifier(searchModule.updateTitleNotifier)
-					.click(function(){
-						$(this).getNotifier()
-						.text("")
-						.data(bb_datanames.count, 0);
-						searchModule.updateTitleNotifier();
-					});					
+					.addNotifier();					
 				searchModule.content.append($("<p>").append(a));
 			}
 			var notifier = a.getNotifier().incrementData(bb_datanames.count, count);
@@ -288,13 +302,7 @@
 			var a = mentionsModule.content.findByData("a", datakey, q);
 			if (a.length == 0) {
 				a = $("<a>").data(datakey, q).href("/#!/mentions").text(q.remove('@'))
-					.addNotifier(mentionsModule.updateTitleNotifier)
-					.click(function(){
-						$(this).getNotifier()
-						.text("")
-						.data(bb_datanames.count, 0);
-						searchModule.updateTitleNotifier();
-					});
+					.addNotifier();
 				mentionsModule.content.append($("<p>").append(a));
 			}
 			var notifier = a.getNotifier().incrementData(bb_datanames.count, count);
@@ -310,7 +318,7 @@
 		if (searches.length > 0) {
 			searches.each(function () {
 				var d = $(this);
-				var q = d.data(datakey);
+				var q = "@" + d.data(datakey);
 
 				chrome.extension.sendRequest({ type: "do-search", q: q }, function(response) {
 					updateMentions(q, response);
@@ -458,6 +466,10 @@
 					setInterval(function() {
 						$("div.module.trends").removeAttr("style");	// pesky thing comes in late with display:block
 					}, 3000);
+
+					$(window).unload(function() {
+					  updateBrowserIcon(true);
+					});
 				});
 			}			
 		};
