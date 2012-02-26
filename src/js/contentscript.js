@@ -109,6 +109,19 @@
 	  	var next = this.next(selector);
 	  	return next;
 	  };
+
+  	  $.fn.getNotifierCount = function() {
+	  	return this.getNotifier().data(bb_datanames.count);
+	  };
+
+  	  $.fn.hasNotifier = function() {
+	  	return this.getNotifier().length > 0;
+	  };
+
+  	  $.fn.clearNotifier = function() {
+	  	return this.getNotifier().text("").data(bb_datanames.count, 0);
+	  };
+
 	  $.fn.incrementData = function(key, inc) {
 	  	return this.data(key, this.data(key) + inc);
 	  };
@@ -182,13 +195,6 @@
 		var f = $("<div class='flex-module' />").append(h).append(d);
 		var m = $("<div class='module' />").addClass(bb_classnames.module).addClass(classname).append(f);
 
-		h.click(function(){
-			d.slideToggle("fast", function () {
-				options.collapse[classname.removePrefix()] = !$(this).is(":visible");
-				saveOptions();
-			});				
-		}).addClass("pointer");
-
 		var img;
 		if (iconurl) {
 			img = $("<img>").addClass("bb-icon").src(iconurl);
@@ -199,32 +205,25 @@
 		m.title = h;
 		m.icon = img;
 
-		m.updateTitleNotifier = function () {
-			var notifiers = m.content.findByClass(bb_classnames.notify);
-			var total = 0;
-			notifiers.each(function(){
-				total += $(this).data(bb_datanames.count);
-			});
-			var notifier = m.title.getNotifier();
-			if (total > 0) {
-				notifier.text(total + " new").data(bb_datanames.count, total)
-					.appendClear(m.clearAllNotifiers)
-					.fadeIn("fast");
-				m.icon.addClass(bb_classnames.notify).src(iconUrls.notify);
-			} else {
-				notifier.fadeOut("fast").html("").data(bb_datanames.count, 0);
-				m.icon.removeClass(bb_classnames.notify).src(iconUrls.default);
-			}
-			updateBrowserIcon();
-			return total;
-		};
-
 		m.clearAllNotifiers = function() {
 			m.content.findByClass(bb_classnames.notify)
 				.text("")
 				.data(bb_datanames.count, 0);
-			m.updateTitleNotifier();
+			updateTitleNotifier(m);
 		};
+
+		m.hoverIntent(
+			function(){
+				if (!h.hasNotifier() || h.getNotifierCount() == 0) {
+					m.content.slideDown("fast");
+				}
+			},
+			function(){
+				if (!h.hasNotifier() || h.getNotifierCount() == 0) {
+					m.content.slideUp("fast");
+				}
+			}
+		);
 
 		m.hover(
 			function(){
@@ -253,6 +252,39 @@
 		chrome.extension.sendRequest({ type: "set-icon", notify: clear || total > 0 });
 	};
 
+	var updateTitleNotifiers = function(){
+		bb_modules.forEach(function(module) {
+			var notifier = module.title.getNotifier().first();
+			if (notifier.length && !(module.is(":hover"))) {
+				if (notifier.data(bb_datanames.count) > 0) {
+					module.content.slideDown();
+				} else {
+					module.content.slideUp();
+				}
+			}
+		});
+		updateBrowserIcon();
+	};
+
+	var updateTitleNotifier = function (m) {
+		var notifiers = m.content.findByClass(bb_classnames.notify);
+		var total = 0;
+		notifiers.each(function(){
+			total += $(this).data(bb_datanames.count);
+		});
+		var notifier = m.title.getNotifier();
+		if (total > 0) {
+			notifier.text(total + " new").data(bb_datanames.count, total)
+				.appendClear(m.clearAllNotifiers)
+				.fadeIn("fast");
+			m.icon.addClass(bb_classnames.notify).src(iconUrls.notify);
+		} else {
+			notifier.fadeOut("fast").html("").data(bb_datanames.count, 0);
+			m.icon.removeClass(bb_classnames.notify).src(iconUrls.default);
+		}
+		return total;
+	};
+
 	var getSavedSearches = function () {
 		if (searchModule === undefined) {
 			searchModule = createModule(bb_classnames.savedsearch, "Saved Searches", iconUrls.default);
@@ -267,7 +299,11 @@
 			var a = searchModule.content.findByData("a", datakey, q);
 			if (a.length == 0) {
 				a = $("<a>").data(datakey, q).href("/#!/search/" + encodeURIComponent(q)).text(q)
-					.addNotifier();					
+					.addNotifier()
+					.click(function(){
+						$(this).clearNotifier();
+						updateTitleNotifier(searchModule);
+					});					
 				searchModule.content.append($("<p>").append(a));
 			}
 			var notifier = a.getNotifier().incrementData(bb_datanames.count, count);
@@ -275,7 +311,7 @@
 			if (newcount > 0) {
 				notifier.text(newcount + " new");
 			}
-			searchModule.updateTitleNotifier();
+			updateTitleNotifier(searchModule);
 		};
 
 		var searches = $("div.typeahead-items > ul > li > a");
@@ -305,7 +341,11 @@
 			var a = mentionsModule.content.findByData("a", datakey, q);
 			if (a.length == 0) {
 				a = $("<a>").data(datakey, q).href("/#!/mentions").text(q.remove('@'))
-					.addNotifier();
+					.addNotifier()
+					.click(function(){
+						$(this).clearNotifier();
+						updateTitleNotifier(mentionsModule);
+					});
 				mentionsModule.content.append($("<p>").append(a));
 			}
 			var notifier = a.getNotifier().incrementData(bb_datanames.count, count);
@@ -313,7 +353,7 @@
 			if (newcount > 0) {
 				notifier.text(newcount + " new");
 			}
-			mentionsModule.updateTitleNotifier();
+			updateTitleNotifier(mentionsModule);
 		};
 
 		var searches = $("a.account-summary div.account-group").first();
@@ -416,67 +456,80 @@
 
 	var urlinterval, searchinterval, mentionsinterval;
 
-	var BetterBird = (function () {
-		return {
-			Init: function() {
-				clearInterval(urlinterval);
-				clearInterval(searchinterval);
-				clearInterval(mentionsinterval);
-				var numsearches = 0, nummentions = 0;
-				var searchesperhour = 150;
+	var BetterBird = {
+		Init: function() {
+			clearInterval(urlinterval);
+			clearInterval(searchinterval);
+			clearInterval(mentionsinterval);
+			var numsearches = 0, nummentions = 0;
+			var searchesperhour = 150;
 
-				chrome.extension.sendRequest({ "type": "load-options" }, function (response) {
-					options = response;
-					applyCss(options);
-					setTimeout(function() {					// a little time for the ajax to populate
-						createBirdBlock();
-						
-						urlinterval = setInterval(function() {
-							var stream = $("div.stream");
-							if (options.expandurls) {
-								expandUrls();
-								removeRedirects();
-							}
-							if (options.directtoprofile) {
-								directToProfile(stream);
-							}
-						}, 1500);
-						if (options.mentions) {
-							nummentions = getMentions();
+			chrome.extension.sendRequest({ "type": "load-options" }, function (response) {
+				options = response;
+				applyCss(options);
+				setTimeout(function() {					// a little time for the ajax to populate
+					createBirdBlock();
+					
+					urlinterval = setInterval(function() {
+						var stream = $("div.stream");
+						if (options.expandurls) {
+							expandUrls();
+							removeRedirects();
 						}
-						if (options.savedsearches) {
-							numsearches = getSavedSearches();
+						if (options.directtoprofile) {
+							directToProfile(stream);
 						}
-						createOptionsModule();
-
-						setTimeout(function() {
-							var searchtime = 60 * 60 * 1000 * (numsearches + nummentions) / searchesperhour;	// rate-limit
-							if (nummentions > 0) {
-								mentionsinterval = setInterval(function(){
-									getMentions();
-								}, searchtime);
-							}
-
-							if (numsearches > 0) {
-								searchinterval = setInterval(function(){
-									getSavedSearches();
-								}, searchtime);
-							}
-						}, 10000);
-
 					}, 1500);
 
-					setInterval(function() {
-						$("div.module.trends").removeAttr("style");	// pesky thing comes in late with display:block
-					}, 3000);
+					if (options.mentions) {
+						nummentions = getMentions();
+					}
 
-					$(window).unload(function() {
-					  updateBrowserIcon(true);
-					});
+					if (options.savedsearches) {
+						numsearches = getSavedSearches();
+					}
+
+					createOptionsModule();
+
+					setInterval(updateTitleNotifiers, 2000);
+
+					setTimeout(function() {
+						var searchtime = 60 * 60 * 1000 * (numsearches + nummentions) / searchesperhour;	// rate-limit
+						if (nummentions > 0) {
+							mentionsinterval = setInterval(function(){
+								getMentions();
+							}, searchtime);
+						}
+
+						if (numsearches > 0) {
+							searchinterval = setInterval(function(){
+								getSavedSearches();
+							}, searchtime);
+						}
+					}, 10000);
+
+				}, 1500);
+
+				setInterval(function() {
+					$("div.module.trends").removeAttr("style");	// pesky thing comes in late with display:block
+				}, 3000);
+
+				$(window).unload(function() {
+				  updateBrowserIcon(true);
 				});
-			}			
-		};
-	})();
+			});
+
+			chrome.extension.onRequest.addListener(function(request, sender, callback) {
+				console.log(request);
+			    switch(request.type) {
+			        case "go-home":
+			            document.location.href = $("li#global-nav-home > a").href();
+			            break;
+			        default:
+			    }
+			});
+		}			
+	};
 
 	var isloggedin = $(document.body).is(".logged-in");
 	if (isloggedin) {

@@ -38,10 +38,10 @@ if (currVersion != prevVersion) {
 }
 
 chrome.browserAction.onClicked.addListener(function() {
-    setNotifyIcon(false);
     findTab(function(tabs) {
         if (tabs.length) {
             chrome.tabs.update(tabs[0].id, { active: true });
+            chrome.tabs.sendRequest(tabs[0].id, { "type": "go-home" });
         } else {
             chrome.tabs.create({ url: "http://twitter.com" });
         }

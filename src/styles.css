@@ -67,12 +67,9 @@ div.bb-birdblock h3 {
 	margin-bottom:0;
 }
 
-div.bb-birdblock h3.pointer {
-	cursor: pointer;
-}
-
 div.bb-birdblock h3 a.bb-clear {
 	display: none;
+	cursor: pointer;
 }
 
 div.bb-birdblock h3 + div {
