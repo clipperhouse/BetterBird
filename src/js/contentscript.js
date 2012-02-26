@@ -56,8 +56,11 @@
 	  	return attributeFn(this, "title", title);	  	
 	  };
 
-  	  $.fn.for = function(fr) {
-	  	return attributeFn(this, "for", fr);	  	
+  	  $.fn.for = function(obj) {
+  	  	if (obj.id()) {
+  	  		return attributeFn(this, "for", obj.id())
+  	  	}
+	  	return attributeFn(this, "for", obj);	  	
 	  };
 
 	  $.fn.checked = function(ischecked) {
