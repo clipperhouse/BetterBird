@@ -150,6 +150,14 @@
 		return m;
 	};
 
+	var notifyCounts = {
+		savedsearch: 0,
+		mentions: 0,
+		total: function(){
+			return this.savedsearch + this.mentions;
+		}
+	};
+
 	var updateModuleNotifier = function (module) {
 		var notifiers = module.content.find("small." + bb_classnames.notify);
 		var total = 0;
@@ -162,14 +170,21 @@
 		} else {
 			notifier.text("");
 		}
+		return total;
+	};
+
+	var updateIcon = function(notify) {
+		chrome.extension.sendRequest({ type: "set-icon", notify: notifyCounts.total() > 0 });
 	};
 
 	var updateSavedSearchTotal = function() {
-		updateModuleNotifier(searchModule);
+		notifyCounts.savedsearch = updateModuleNotifier(searchModule);
+		updateIcon();
 	};
 
 	var updateMentionsTotal = function() {
-		updateModuleNotifier(mentionsModule);
+		notifyCounts.mentions = updateModuleNotifier(mentionsModule);
+		updateIcon();
 	};
 
 	var getSavedSearches = function () {
@@ -179,7 +194,8 @@
 			birdBlock.append(searchModule.hide());
 		}
 
-		var updateSavedSearch = function (q, count) {
+		var updateSavedSearch = function (q, response) {
+			var count = response.results.length;
 			var datakey = "search-query";
 
 			var a = searchModule.content.findByData("a", datakey, q);
@@ -209,7 +225,7 @@
 				var a = $(this);
 				var q = a.data("search-query");
 				chrome.extension.sendRequest({ type: "do-search", q: q }, function(response) {
-					updateSavedSearch(q, response.results.length);
+					updateSavedSearch(q, response);
 				});
 			});
 			searchModule.show();
@@ -225,7 +241,8 @@
 			birdBlock.append(mentionsModule.hide());
 		}
 
-		var updateMentions = function (q, count) {
+		var updateMentions = function (q, response) {
+			var count = response.results.length;
 			var a = mentionsModule.content.findByData("a", datakey, q);
 			if (a.length == 0) {
 				a = $("<a>").data(datakey, q).href("/#!/mentions").text(q.remove('@'))
@@ -252,7 +269,7 @@
 				var q = "@" + d.data(datakey);
 
 				chrome.extension.sendRequest({ type: "do-search", q: q }, function(response) {
-					updateMentions(q, response.results.length);
+					updateMentions(q, response);
 				});
 			});
 			mentionsModule.show();

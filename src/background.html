@@ -38,13 +38,14 @@ if (currVersion != prevVersion) {
 }
 
 chrome.browserAction.onClicked.addListener(function() {
+    setNotifyIcon(false);
     findTab(function(tabs) {
         if (tabs.length) {
             chrome.tabs.update(tabs[0].id, { active: true });
         } else {
             chrome.tabs.create({ url: "http://twitter.com" });
         }
-    });  
+    });
 });
 
 var currentversion = getVersion();
@@ -98,6 +99,10 @@ var doSearch = function(q, callback){
     });
 };
 
+var setNotifyIcon = function(notify) {
+    chrome.browserAction.setIcon({ path: notify ? "img/twitter_32_notify.png" : "img/twitter_32.png" });
+};
+
 chrome.extension.onRequest.addListener(function(request, sender, callback) {
     switch(request.type) {
         case "load-options":
@@ -108,6 +113,9 @@ chrome.extension.onRequest.addListener(function(request, sender, callback) {
             break;
         case "do-search":
             doSearch(request.q, callback);
+            break;
+        case "set-icon":
+            setNotifyIcon(request.notify);
             break;
         default:
     }
