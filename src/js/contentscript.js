@@ -1,6 +1,7 @@
 
 (function() {
 	var bb_classnames = { 
+		module: "bb-module",
 		expand: "bb-expand", 
 		direct: "bb-direct", 
 		savedsearch: "bb-savedsearch",
@@ -49,6 +50,12 @@
 	  	}
 	  	return this.attr("src");
 	  };
+	  $.fn.title = function(title) {
+	  	if (title) {
+	  		return this.attr("title", title)
+	  	}
+	  	return this.attr("title");
+	  };
 	  $.fn.checked = function(ischecked) {
 	  	if (ischecked === true) {
 	  		return this.attr("checked", "checked");
@@ -58,23 +65,38 @@
 	  	}
 	  };
 
-	  var newNotifier = function(onclear){
-	  	return $("<small>").addClass(bb_classnames.notify).data(bb_datanames.count, 0).click(function(){
-	  		$(this).text("").data(bb_datanames.count, 0);
-	  		if (onclear) {
-	  			onclear();
-	  		}
-	  	});
+	  $.fn.findByClass = function(classname) {
+	  	return this.find("." + classname);
+	  };
+
+	  var newNotifier = function(clearonclick, onclear){
+	  	var s = $("<small>").addClass(bb_classnames.notify).data(bb_datanames.count, 0);
+
+	  	if (clearonclick) {
+	  		s.click(function(){
+		  		$(this).text("").data(bb_datanames.count, 0);
+		  		if (onclear) {
+		  			onclear();
+		  		}
+		  	});
+	  	}
+	  	return s;	  	
 	  };
 
 	  $.fn.addNotifier = function(onclear) {
-	  	return this.after(newNotifier(onclear));
+	  	return this.after(newNotifier(true, onclear));
 	  };
 	  $.fn.appendNotifier = function(onclear) {
-	  	return this.append(newNotifier(onclear));
+	  	return this.append(newNotifier(false, onclear));
 	  };
 	  $.fn.getNotifier = function() {
-	  	return this.next("small." + bb_classnames.notify);
+	  	var selector = "small." + bb_classnames.notify;
+	  	var find = this.find(selector);
+	  	if (find.length) {
+	  		return find;
+	  	}
+	  	var next = this.next(selector);
+	  	return next;
 	  };
 	  $.fn.incrementData = function(key, inc) {
 	  	return this.data(key, this.data(key) + inc);
@@ -140,16 +162,14 @@
 		});			
 	};
 
+	var bb_modules = [];
+
 	var createModule = function(classname, title, iconurl) {
-		var h = $("<h3>").text(title).attr("title", "Click to expand or hide");
-		var img;
-		if (iconurl) {
-			img = $("<img>").addClass("bb-icon").src(iconurl);
-			h.append(img);
-		}
+		var h = $("<h3>").text(title).title("Click to expand or hide");
+
 		var d = $("<div>").addClass(bb_classnames.content).toggle(!options.collapse[classname.removePrefix()]);
 		var f = $("<div class='flex-module' />").append(h).append(d);
-		var m = $("<div class='module' />").addClass(classname).append(f);
+		var m = $("<div class='module' />").addClass(bb_classnames.module).addClass(classname).append(f);
 
 		h.click(function(){
 			d.slideToggle("fast", function () {
@@ -158,49 +178,56 @@
 			});				
 		}).addClass("pointer");
 
+		var img;
+		if (iconurl) {
+			img = $("<img>").addClass("bb-icon").src(iconurl).title("Click to clear notifications").click(function(){
+				m.clearAllNotifiers();
+				return false;
+			});
+			h.append(img);
+		}
+
 		m.content = d;
 		m.title = h;
 		m.icon = img;
+
+		m.updateTitleNotifier = function () {
+			var notifiers = m.content.findByClass(bb_classnames.notify);
+			var total = 0;
+			notifiers.each(function(){
+				total += $(this).data(bb_datanames.count);
+			});
+			var notifier = m.title.getNotifier();
+			if (total > 0) {
+				notifier.text(total + " new").data(bb_datanames.count, total);
+				m.icon.addClass(bb_classnames.notify).src(iconUrls.notify);
+			} else {
+				notifier.text("").data(bb_datanames.count, 0);
+				m.icon.removeClass(bb_classnames.notify).src(iconUrls.default);
+			}
+			updateBrowserIcon();
+			return total;
+		};
+
+		m.clearAllNotifiers = function() {
+			m.content.findByClass(bb_classnames.notify)
+				.text("")
+				.data(bb_datanames.count, 0);
+			m.updateTitleNotifier();
+		};
+
+		bb_modules.push(m);
 		return m;
 	};
 
-	var notifyCounts = {
-		savedsearch: 0,
-		mentions: 0,
-		total: function(){
-			return this.savedsearch + this.mentions;
-		}
-	};
-
-	var updateModuleNotifier = function (module) {
-		var notifiers = module.content.find("small." + bb_classnames.notify);
+	var updateBrowserIcon = function() {
 		var total = 0;
-		notifiers.each(function(){
-			total += $(this).data(bb_datanames.count);
+		bb_modules.forEach(function(module) {
+			module.title.getNotifier().each(function() {
+				total += $(this).data(bb_datanames.count);
+			});
 		});
-		var notifier = module.title.find("small");
-		if (total > 0) {
-			notifier.text(total + " new");
-			module.icon.addClass(bb_classnames.notify).src(iconUrls.notify);
-		} else {
-			notifier.text("");
-			module.icon.removeClass(bb_classnames.notify).src(iconUrls.default);
-		}
-		return total;
-	};
-
-	var updateIcon = function(notify) {
-		chrome.extension.sendRequest({ type: "set-icon", notify: notifyCounts.total() > 0 });
-	};
-
-	var updateSavedSearchTotal = function() {
-		notifyCounts.savedsearch = updateModuleNotifier(searchModule);
-		updateIcon();
-	};
-
-	var updateMentionsTotal = function() {
-		notifyCounts.mentions = updateModuleNotifier(mentionsModule);
-		updateIcon();
+		chrome.extension.sendRequest({ type: "set-icon", notify: total > 0 });
 	};
 
 	var getSavedSearches = function () {
@@ -216,15 +243,14 @@
 
 			var a = searchModule.content.findByData("a", datakey, q);
 			if (a.length == 0) {
-				a = $("<a>").data(datakey, q).href("/#!/search/" + encodeURIComponent(q))
-					.text(q)
+				a = $("<a>").data(datakey, q).href("/#!/search/" + encodeURIComponent(q)).text(q)
+					.addNotifier(searchModule.updateTitleNotifier)
 					.click(function(){
 						$(this).getNotifier()
 						.text("")
 						.data(bb_datanames.count, 0);
-						updateSavedSearchTotal();
-					})
-					.addNotifier(updateSavedSearchTotal);
+						searchModule.updateTitleNotifier();
+					});					
 				searchModule.content.append($("<p>").append(a));
 			}
 			var notifier = a.getNotifier().incrementData(bb_datanames.count, count);
@@ -232,7 +258,7 @@
 			if (newcount > 0) {
 				notifier.text(newcount + " new");
 			}
-			updateSavedSearchTotal();
+			searchModule.updateTitleNotifier();
 		};
 
 		var searches = $("div.typeahead-items > ul > li > a");
@@ -262,11 +288,13 @@
 			var a = mentionsModule.content.findByData("a", datakey, q);
 			if (a.length == 0) {
 				a = $("<a>").data(datakey, q).href("/#!/mentions").text(q.remove('@'))
+					.addNotifier(mentionsModule.updateTitleNotifier)
 					.click(function(){
-						$(this).getNotifier().text("").data(bb_datanames.count, 0);
-						updateMentionsTotal();
-					})
-					.addNotifier(updateMentionsTotal);;
+						$(this).getNotifier()
+						.text("")
+						.data(bb_datanames.count, 0);
+						searchModule.updateTitleNotifier();
+					});
 				mentionsModule.content.append($("<p>").append(a));
 			}
 			var notifier = a.getNotifier().incrementData(bb_datanames.count, count);
@@ -274,15 +302,15 @@
 			if (newcount > 0) {
 				notifier.text(newcount + " new");
 			}
-			updateMentionsTotal();
+			mentionsModule.updateTitleNotifier();
 		};
 
-		var searches = $("a.account-summary div.account-group");
+		var searches = $("a.account-summary div.account-group").first();
 
 		if (searches.length > 0) {
 			searches.each(function () {
 				var d = $(this);
-				var q = "@" + d.data(datakey);
+				var q = "@aplusk";	// + d.data(datakey);
 
 				chrome.extension.sendRequest({ type: "do-search", q: q }, function(response) {
 					updateMentions(q, response);
@@ -378,7 +406,6 @@
 	var urlinterval, searchinterval, mentionsinterval;
 
 	var BetterBird = (function () {
-
 		return {
 			Init: function() {
 				clearInterval(urlinterval);
