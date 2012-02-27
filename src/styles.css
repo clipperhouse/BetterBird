@@ -1,7 +1,6 @@
-div.logged-in div.wrapper {
+div#page-node-home {
 	display: none;
 }
-
 
 body.bb-columnswitch div.content-main {
 	float:left;

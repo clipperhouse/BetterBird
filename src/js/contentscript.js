@@ -82,7 +82,7 @@
 	  };
 
 	  $.fn.addNotifier = function() {
-	  	return this.after(newNotifier());
+	  	return this.append(newNotifier());
 	  };
 
 	  $.fn.appendNotifier = function() {
@@ -101,6 +101,9 @@
 	  };
 
 	  $.fn.getNotifier = function() {
+	  	if (this.isNotifier()) {
+  	  		return this;
+  	  	}
 	  	var selector = "small." + bb_classnames.notify;
 	  	var find = this.find(selector);
 	  	if (find.length) {
@@ -112,6 +115,28 @@
 
   	  $.fn.getNotifierCount = function() {
 	  	return this.getNotifier().data(bb_datanames.count);
+	  };
+
+  	  $.fn.updateNotifier = function(count, isincrement) {
+  	  	var n = this.getNotifier();
+  	  	if (isincrement) {
+  	  		count += n.getNotifierCount();
+  	  	}
+  	  	if (n.length) {
+	  	  	if (count > 0) {
+	  	  		return n.data(bb_datanames.count, count).text(count + " new");
+	  	  	}
+  	  		return n.data(bb_datanames.count, count).text("");
+  	  	}
+	  	return this;
+	  };
+
+  	  $.fn.incrementNotifier = function(count) {
+  	  	return this.updateNotifier(count, true);
+	  };
+
+  	  $.fn.isNotifier = function() {
+	  	return this.hasClass(bb_classnames.notify);
 	  };
 
   	  $.fn.hasNotifier = function() {
@@ -129,6 +154,7 @@
 
 	String.prototype.remove = function(r) { return this.replace(r, ''); };
 	String.prototype.removePrefix = function(r) { return this.remove(/^bb\-/); };
+	String.prototype.last = function() { return this[this.length - 1]; };
 
 	var body = $(document.body);
 	var wrapper = $("div.wrapper");
@@ -137,7 +163,7 @@
 
 	var regex = {
 		scheme: /^http[s]?:\/\/(www\.)*/,
-		trailingid: /\/[\d\/]+$/g,
+		trailingid: /\/[A-Z]*[\d\/]+$/gi,
 		trailing: /[\/\-\.\s]$/,
 		fileext: /(.html|.php|.aspx)/i,
 		querystring: /\?.*$/,
@@ -153,21 +179,22 @@
 			bb_classnames[key] = "bb-" + key;
 			body.toggleClass(bb_classnames[key], options.styles[key]);
 		}
-		wrapper.show();
+		$("div#page-node-home").show();
 	};
 
 	var abbrevUrl = function(url) {
 		var parts = decodeURIComponent(url
 			.remove(regex.scheme)
 			.remove(regex.querystring)
-			.remove(regex.trailingid)
 			.remove(regex.fileext)
+			.remove(regex.trailingid)
 			.remove(regex.trailing)
 			).split('/');
 		if (parts.length <= 2) {
 			return parts.join('/');
 		}
 		parts.splice(1, parts.length - 2, "…");
+		parts[this.length] = parts[this.length].split('-').slice(0, 6).join("-");
 		return parts.join('/');
 	};
 
@@ -189,7 +216,7 @@
 	var bb_modules = [];
 
 	var createModule = function(classname, title, iconurl) {
-		var h = $("<h3>").text(title).title("Click to expand or hide");
+		var h = $("<h3>").text(title).title("Hover to expand");
 
 		var d = $("<div>").addClass(bb_classnames.content).toggle(!options.collapse[classname.removePrefix()]);
 		var f = $("<div class='flex-module' />").append(h).append(d);
@@ -206,9 +233,7 @@
 		m.icon = img;
 
 		m.clearAllNotifiers = function() {
-			m.content.findByClass(bb_classnames.notify)
-				.text("")
-				.data(bb_datanames.count, 0);
+			m.content.findByClass(bb_classnames.notify).updateNotifier(0);
 			updateTitleNotifier(m);
 		};
 
@@ -246,7 +271,7 @@
 		var total = 0;
 		bb_modules.forEach(function(module) {
 			module.title.getNotifier().each(function() {
-				total += $(this).data(bb_datanames.count);
+				total += $(this).getNotifierCount();
 			});
 		});
 		chrome.extension.sendRequest({ type: "set-icon", notify: clear || total > 0 });
@@ -256,7 +281,7 @@
 		bb_modules.forEach(function(module) {
 			var notifier = module.title.getNotifier().first();
 			if (notifier.length && !(module.is(":hover"))) {
-				if (notifier.data(bb_datanames.count) > 0) {
+				if (notifier.getNotifierCount() > 0) {
 					module.content.slideDown();
 				} else {
 					module.content.slideUp();
@@ -270,16 +295,16 @@
 		var notifiers = m.content.findByClass(bb_classnames.notify);
 		var total = 0;
 		notifiers.each(function(){
-			total += $(this).data(bb_datanames.count);
+			total += $(this).getNotifierCount();
 		});
 		var notifier = m.title.getNotifier();
 		if (total > 0) {
-			notifier.text(total + " new").data(bb_datanames.count, total)
+			notifier.updateNotifier(total)
 				.appendClear(m.clearAllNotifiers)
 				.fadeIn("fast");
 			m.icon.addClass(bb_classnames.notify).src(iconUrls.notify);
 		} else {
-			notifier.fadeOut("fast").html("").data(bb_datanames.count, 0);
+			notifier.fadeOut("fast").updateNotifier(0);
 			m.icon.removeClass(bb_classnames.notify).src(iconUrls.default);
 		}
 		return total;
@@ -303,14 +328,10 @@
 					.click(function(){
 						$(this).clearNotifier();
 						updateTitleNotifier(searchModule);
-					});					
+					});
 				searchModule.content.append($("<p>").append(a));
 			}
-			var notifier = a.getNotifier().incrementData(bb_datanames.count, count);
-			var newcount = notifier.data(bb_datanames.count);
-			if (newcount > 0) {
-				notifier.text(newcount + " new");
-			}
+			a.incrementNotifier(count);
 			updateTitleNotifier(searchModule);
 		};
 
@@ -348,11 +369,7 @@
 					});
 				mentionsModule.content.append($("<p>").append(a));
 			}
-			var notifier = a.getNotifier().incrementData(bb_datanames.count, count);
-			var newcount = notifier.data(bb_datanames.count);
-			if (newcount > 0) {
-				notifier.text(newcount + " new");
-			}
+			a.incrementNotifier(count);
 			updateTitleNotifier(mentionsModule);
 		};
 
