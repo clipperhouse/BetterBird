@@ -1,6 +1,6 @@
 {
   "name": "Better Bird",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Makes Twitter a bit better",
   "background_page": "background.html",
   "icons": { "16": "img/twitter_16.png",
