@@ -30,6 +30,7 @@
 			return $(this).data(key).length > 0;
 		});
 	  };
+	  
 	  $.fn.findByData = function(selector, key, value) {
 	  	return this.find(selector).filterByData(key, value);
 	  };
