@@ -30,7 +30,7 @@
 			return $(this).data(key).length > 0;
 		});
 	  };
-	  
+
 	  $.fn.findByData = function(selector, key, value) {
 	  	return this.find(selector).filterByData(key, value);
 	  };
@@ -168,6 +168,7 @@
 		trailing: /[\/\-\.\s]$/,
 		fileext: /(.html|.php|.aspx)/i,
 		querystring: /\?.*$/,
+		nyt: /www10\.nytimes/
 	};
 
 	var iconUrls = {
@@ -186,6 +187,7 @@
 	var abbrevUrl = function(url) {
 		var parts = decodeURIComponent(url
 			.remove(regex.scheme)
+			.replace(regex.nyt, 'nytimes')
 			.remove(regex.querystring)
 			.remove(regex.fileext)
 			.remove(regex.trailingid)
@@ -394,6 +396,7 @@
 		$("a[data-ultimate-url], a[data-expanded-url]").not("a." + bb_classnames.direct).each(function() {
 			var a = $(this);
 			var u = a.data("ultimate-url") || a.data("expanded-url");
+			u = u.replace(regex.nyt, 'nytimes');
 			a.data(bb_datanames.originalhref, $(this).href()).href(u).addClass(bb_classnames.direct);
 		});
 	};
@@ -403,11 +406,6 @@
 			var a = $(this);
 			a.href(a.data(bb_datanames.originalhref)).removeClass(bb_classnames.direct);
 		});			
-	};
-
-	var directToProfile = function(scope) {
-		$("a.js-user-profile-link").removeClass("js-account-group js-action-profile js-user-profile-link");
-		$("a.twitter-atreply").removeClass("twitter-atreply pretty-link");
 	};
 
 	var createOptionsModule = function() {
@@ -493,9 +491,6 @@
 						if (options.expandurls) {
 							expandUrls();
 							removeRedirects();
-						}
-						if (options.directtoprofile) {
-							directToProfile(stream);
 						}
 					}, 1500);
 
