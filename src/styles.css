@@ -36,11 +36,12 @@ body.bb-columnwide div.tweet p {
 	width: 92%;
 }
 
-body.bb-hidewho div[data-component-term='user_recommendations'] {
+
+body.bb-hidewho div.bb-wrapper-who {
 	display:none;
 }
 
-body.bb-hidetrends div.module.trends {
+body.bb-hidetrends div.bb-wrapper-trends {
 	display:none;	
 }
 

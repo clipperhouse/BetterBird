@@ -465,6 +465,14 @@
 		$("div.mini-profile", dashboard).after(birdBlock);
 	};
 
+	var wrapModules = function(){
+		var trendswrapper = $("<div>").addClass("bb-wrapper-trends");
+		$("div.module.trends").wrap(trendswrapper);
+
+		var whowrapper = $("<div>").addClass("bb-wrapper-who");
+		$("div[data-component-term='user_recommendations']").wrap(whowrapper);
+	};
+
 	var options;
 	var saveOptions = function() {
 		chrome.extension.sendRequest({ type: "save-options", options: options });
@@ -521,11 +529,9 @@
 						}
 					}, 10000);
 
-				}, 1500);
+					wrapModules();
 
-				setInterval(function() {
-					$("div.module.trends").removeAttr("style");	// pesky thing comes in late with display:block
-				}, 3000);
+				}, 1500);
 
 				$(window).unload(function() {
 				  updateBrowserIcon(true);
