@@ -176,6 +176,10 @@
 		notify: chrome.extension.getURL("img/twitter_32_notify.png")
 	};
 
+	var checkVersionUpdate = function (callback) {
+		chrome.extension.sendRequest({ type: "check-update" }, callback);
+	};
+
 	var applyCss = function (options) {
 		for (var key in options.styles) {
 			bb_classnames[key] = "bb-" + key;
@@ -248,7 +252,7 @@
 			},
 			function(){
 				if (!h.hasNotifier() || h.getNotifierCount() == 0) {
-					m.content.slideUp("fast");
+					m.content.slideUp();
 				}
 			}
 		);
@@ -427,7 +431,12 @@
 		addStyleOptionCheckbox("hidetrends", "Hide “Trends”");
 
 		optionsModule.content.append($("<p>").append($("<small>").append("Created by ").append($("<a>").text("Matt Sherman").href("/#!/clipperhouse"))));
-		birdBlock.append(optionsModule);
+		checkVersionUpdate(function (updated) {
+			if (!updated) {
+				optionsModule.content.hide();
+			};
+			birdBlock.append(optionsModule);
+		});
 	};
 
 	var addOptionCheckbox = function(optionkey, labeltext, callback) {
@@ -467,15 +476,19 @@
 
 	var wrapModules = function(){
 		var trendswrapper = $("<div>").addClass("bb-wrapper-trends");
-		$("div.module.trends").wrap(trendswrapper);
+		$("div.module.trends", dashboard).wrap(trendswrapper);
 
 		var whowrapper = $("<div>").addClass("bb-wrapper-who");
-		$("div[data-component-term='user_recommendations']").wrap(whowrapper);
+		$("div[data-component-term='user_recommendations']", dashboard).wrap(whowrapper);
 	};
 
 	var options;
 	var saveOptions = function() {
 		chrome.extension.sendRequest({ type: "save-options", options: options });
+	};
+
+	var hasRun = function() {
+		chrome.extension.sendRequest({ type: "has-run" });
 	};
 
 	var urlinterval, searchinterval, mentionsinterval;
@@ -535,6 +548,7 @@
 
 				$(window).unload(function() {
 				  updateBrowserIcon(true);
+				  hasRun();
 				});
 			});
 

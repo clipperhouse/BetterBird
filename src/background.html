@@ -27,14 +27,18 @@ function getVersion() {
 
 // Check if the version has changed.
 var currVersion = getVersion();
-var prevVersion = localStorage['version']
+var prevVersion = localStorage['version'];
+var isFirstRun = typeof prevVersion == 'undefined';
+var hasUpdated = false;
+
 if (currVersion != prevVersion) {
-    if (typeof prevVersion == 'undefined') {
+    if (isFirstRun) {
       onInstall();
     } else {
       onUpdate();
     }
     localStorage['version'] = currVersion;
+    hasUpdated = true;
 }
 
 chrome.browserAction.onClicked.addListener(function() {
@@ -115,6 +119,13 @@ chrome.extension.onRequest.addListener(function(request, sender, callback) {
             break;
         case "set-icon":
             setNotifyIcon(request.notify);
+            break;
+        case "check-update":
+            callback(hasUpdated);
+            break;
+        case "has-run":
+            isFirstRun = false;
+            hasUpdated = false;
             break;
         default:
     }
