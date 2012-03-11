@@ -242,15 +242,14 @@
 		m.clearAllNotifiers = function() {
 			m.content.findByClass(bb_classnames.notify).updateNotifier(0);
 			updateTitleNotifier(m);
+			updateBrowserIcon(true);
 		};
 
 		m.hoverIntent(
-			function(){
-				if (!h.hasNotifier() || h.getNotifierCount() == 0) {
-					m.content.slideDown("fast");
-				}
+			function() {
+				m.content.slideDown("fast");
 			},
-			function(){
+			function() {
 				if (!h.hasNotifier() || h.getNotifierCount() == 0) {
 					m.content.slideUp();
 				}
@@ -270,32 +269,26 @@
 		return m;
 	};
 
-	var updateBrowserIcon = function(clear) {
-		if (clear) {
-			chrome.extension.sendRequest({ type: "set-icon", notify: false });
-			return;
-		}
-		var total = 0;
-		bb_modules.forEach(function(module) {
-			module.title.getNotifier().each(function() {
-				total += $(this).getNotifierCount();
-			});
-		});
-		chrome.extension.sendRequest({ type: "set-icon", notify: clear || total > 0 });
+	var updateBrowserIcon = function(notify) {
+		chrome.extension.sendRequest({ type: "set-icon", notify: notify });
 	};
 
 	var updateTitleNotifiers = function(){
+		var total = 0;
 		bb_modules.forEach(function(module) {
 			var notifier = module.title.getNotifier().first();
-			if (notifier.length && !(module.is(":hover"))) {
-				if (notifier.getNotifierCount() > 0) {
-					module.content.slideDown();
-				} else {
-					module.content.slideUp();
+			if (notifier.length) {
+				var count = notifier.getNotifierCount();
+				if (!(module.is(":hover"))) {
+					if (count) {
+						module.content.slideDown();
+					} else {
+						module.content.slideUp();
+					}
 				}
+				total += count;
 			}
 		});
-		updateBrowserIcon();
 	};
 
 	var updateTitleNotifier = function (m) {
@@ -317,83 +310,113 @@
 		return total;
 	};
 
-	var getSavedSearches = function () {
+	var createSearchModule = function () {
 		if (searchModule === undefined) {
 			searchModule = createModule(bb_classnames.savedsearch, "Saved Searches", iconUrls.default);
 			searchModule.title.appendNotifier(searchModule.clearAllNotifiers);
-			birdBlock.append(searchModule.hide());
+			searchModule.content.hide();
+			birdBlock.append(searchModule);
 		}
-
-		var updateSavedSearch = function (q, response) {
-			var count = response.results.length;
-			var datakey = "search-query";
-
-			var a = searchModule.content.findByData("a", datakey, q);
-			if (a.length == 0) {
-				a = $("<a>").data(datakey, q).href("/#!/search/" + encodeURIComponent(q)).text(q)
-					.addNotifier()
-					.click(function(){
-						$(this).clearNotifier();
-						updateTitleNotifier(searchModule);
-					});
-				searchModule.content.append($("<p>").append(a));
-			}
-			a.incrementNotifier(count);
-			updateTitleNotifier(searchModule);
-		};
-
-		var searches = $("div.typeahead-items > ul > li > a");
-		if (searches.length > 0) {
-			searches.each(function () {
-				var a = $(this);
-				var q = a.data("search-query");
-				chrome.extension.sendRequest({ type: "do-search", q: q }, function(response) {
-					updateSavedSearch(q, response);
-				});
-			});
-			searchModule.show();
-		}
-		return searches.length;
 	};
 
-	var getMentions = function () {
-		var datakey = "screen-name";
+	var searches = [];
+	var searchesperhour = 150;
+	var startSavedSearches = function () {
+		createSearchModule();
+
+		var elements = $("div.typeahead-items > ul > li > a");
+		searches = $.map(elements, function (a) {
+			return $(a).data("search-query");
+		});
+
+		if (searches.length) {
+			searchAll();
+            var searchtime = 60 * 60 * 1000 * (searches.length + 1) / searchesperhour;    // rate-limit
+            setInterval(searchAll, searchtime);
+		}
+	};
+
+	var searchAll = function() {
+    	for (var i in searches) {
+    		doSearch(searches[i]);
+    	}		
+	};
+
+	var doSearch = function(q) {
+		chrome.extension.sendRequest({ type: "do-search", q: q }, updateSavedSearch);
+	};
+
+	var updateSavedSearch = function (response) {
+		var q = decodeURIComponent(response.query).replace('+', ' ');
+		var count = response.results.length;
+		var datakey = "search-query";
+
+		var a = searchModule.content.findByData("a", datakey, q);
+		if (a.length == 0) {
+			a = $("<a>").data(datakey, q).href("/#!/search/" + encodeURIComponent(q)).text(q)
+				.addNotifier()
+				.click(function(){
+					$(this).clearNotifier();
+					updateTitleNotifier(searchModule);
+				});
+			searchModule.content.append($("<p>").append(a));
+		}
+		a.incrementNotifier(count);
+		updateTitleNotifier(searchModule);
+	};
+
+	var mentions = [];
+	var startMentions = function () {
+		createMentionsModule();
+
+		var elements = $("a.account-summary div.account-group").first();
+		mentions = $.map(elements, function (a) {
+			return $(a).data("screen-name");
+		});
+
+		if (mentions.length) {
+			mentionsAll();
+            var searchtime = 60 * 60 * 1000 * (searches.length + 1) / searchesperhour;    // rate-limit
+            setInterval(mentionsAll, searchtime);
+		}
+	};
+
+	var createMentionsModule = function () {
 		if (mentionsModule === undefined) {
 			mentionsModule = createModule(bb_classnames.mentions, "@Mentions", iconUrls.default);
 			mentionsModule.title.appendNotifier();
-			birdBlock.append(mentionsModule.hide());
+			mentionsModule.content.hide();
+			searchModule.before(mentionsModule);
 		}
+	};
 
-		var updateMentions = function (q, response) {
-			var count = response.results.length;
-			var a = mentionsModule.content.findByData("a", datakey, q);
-			if (a.length == 0) {
-				a = $("<a>").data(datakey, q).href("/#!/mentions").text(q.remove('@'))
-					.addNotifier()
-					.click(function(){
-						$(this).clearNotifier();
-						updateTitleNotifier(mentionsModule);
-					});
-				mentionsModule.content.append($("<p>").append(a));
-			}
-			a.incrementNotifier(count);
-			updateTitleNotifier(mentionsModule);
-		};
+	var updateMentions = function (response) {
+		var q = decodeURIComponent(response.query).replace('+', ' ');
+		var count = response.results.length;
+		var datakey = "search-query";
 
-		var searches = $("a.account-summary div.account-group").first();
-
-		if (searches.length > 0) {
-			searches.each(function () {
-				var d = $(this);
-				var q = "@" + d.data(datakey);
-
-				chrome.extension.sendRequest({ type: "do-search", q: q }, function(response) {
-					updateMentions(q, response);
+		var a = mentionsModule.content.findByData("a", datakey, q);
+		if (a.length == 0) {
+			a = $("<a>").data(datakey, q).href("/#!/mentions/").text(q)
+				.addNotifier()
+				.click(function(){
+					$(this).clearNotifier();
+					updateTitleNotifier(mentionsModule);
 				});
-			});
-			mentionsModule.show();
+			mentionsModule.content.append($("<p>").append(a));
 		}
-		return searches.length;
+		a.incrementNotifier(count);
+		updateTitleNotifier(mentionsModule);
+	};
+
+	var mentionsAll = function() {
+    	for (var i in mentions) {
+    		doMentions(mentions[i]);
+    	}		
+	};
+
+	var doMentions = function(q) {
+		chrome.extension.sendRequest({ type: "do-search", q: q }, updateMentions);
 	};
 
 	var removeRedirects = function() {
@@ -491,15 +514,11 @@
 		chrome.extension.sendRequest({ type: "has-run" });
 	};
 
-	var urlinterval, searchinterval, mentionsinterval;
+	var urlinterval;
 
 	var BetterBird = {
 		Init: function() {
 			clearInterval(urlinterval);
-			clearInterval(searchinterval);
-			clearInterval(mentionsinterval);
-			var numsearches = 0, nummentions = 0;
-			var searchesperhour = 150;
 
 			chrome.extension.sendRequest({ "type": "load-options" }, function (response) {
 				options = response;
@@ -515,45 +534,25 @@
 						}
 					}, 1500);
 
-					if (options.mentions) {
-						nummentions = getMentions();
-					}
-
 					if (options.savedsearches) {
-						numsearches = getSavedSearches();
+						startSavedSearches();
+						startMentions();
 					}
 
 					createOptionsModule();
 
 					setInterval(updateTitleNotifiers, 2000);
 
-					setTimeout(function() {
-						var searchtime = 60 * 60 * 1000 * (numsearches + nummentions) / searchesperhour;	// rate-limit
-						if (nummentions > 0) {
-							mentionsinterval = setInterval(function(){
-								getMentions();
-							}, searchtime);
-						}
-
-						if (numsearches > 0) {
-							searchinterval = setInterval(function(){
-								getSavedSearches();
-							}, searchtime);
-						}
-					}, 10000);
-
 					wrapModules();
 
 				}, 1500);
 
 				$(window).unload(function() {
-				  updateBrowserIcon(true);
 				  hasRun();
 				});
 			});
 
 			chrome.extension.onRequest.addListener(function(request, sender, callback) {
-				console.log(request);
 			    switch(request.type) {
 			        case "go-home":
 			            document.location.href = $("li#global-nav-home > a").href();

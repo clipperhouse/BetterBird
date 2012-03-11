@@ -2,12 +2,19 @@
 <script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
 <script>
 
-var findTab = function(callback) {
+var datakeys = {
+    version: "version",
+    savedsearches: "savedsearches",
+    mentions: "mentions",
+    options: "options"
+};
+
+var findTwitterTab = function (callback) {
     chrome.tabs.query({ url : "*://twitter.com/*" }, callback);  
 };
 
 function onInstall() {
-    findTab(function(tabs) {
+    findTwitterTab(function (tabs) {
         if (tabs.length) {
             chrome.tabs.update(tabs[0].id, { url: "http://twitter.com", active: true });
         } else {
@@ -27,7 +34,7 @@ function getVersion() {
 
 // Check if the version has changed.
 var currVersion = getVersion();
-var prevVersion = localStorage['version'];
+var prevVersion = localStorage[datakeys.version];
 var isFirstRun = typeof prevVersion == 'undefined';
 var hasUpdated = false;
 
@@ -37,15 +44,16 @@ if (currVersion != prevVersion) {
     } else {
       onUpdate();
     }
-    localStorage['version'] = currVersion;
+    localStorage[datakeys.version] = currVersion;
     hasUpdated = true;
 }
 
 chrome.browserAction.onClicked.addListener(function() {
-    findTab(function(tabs) {
+    setNotifyIcon(false);
+    findTwitterTab(function(tabs) {
         if (tabs.length) {
             chrome.tabs.update(tabs[0].id, { active: true });
-            chrome.tabs.sendRequest(tabs[0].id, { "type": "go-home" });
+            chrome.tabs.sendRequest(tabs[0].id, { type: "go-home" });
         } else {
             chrome.tabs.create({ url: "http://twitter.com" });
         }
@@ -53,7 +61,7 @@ chrome.browserAction.onClicked.addListener(function() {
 });
 
 var currentversion = getVersion();
-var optionskey = "options";
+
 var defaultoptions = {
     version: currentversion,
     styles: {
@@ -75,7 +83,7 @@ var defaultoptions = {
 
 var loadOptions = function () {
     var options = {};
-    var optionsjson = localStorage[optionskey];
+    var optionsjson = localStorage[datakeys.options];
     if (optionsjson) {
         options = JSON.parse(optionsjson);
     }
@@ -88,11 +96,11 @@ var loadOptions = function () {
 };
 
 var saveOptions = function (options) {
-    localStorage[optionskey] = JSON.stringify(options);
+    localStorage[datakeys.options] = JSON.stringify(options);
     return true;
 };
 
-var doSearch = function(q, callback){
+var doSearch = function (q, callback){
     var storagekey = "refreshurl." + q;
     var qs = localStorage[storagekey] || "?q=" + encodeURIComponent(q) + "&rpp=100";
     var url = "http://search.twitter.com/search.json" + qs;
@@ -102,11 +110,16 @@ var doSearch = function(q, callback){
     });
 };
 
-var setNotifyIcon = function(notify) {
-    chrome.browserAction.setIcon({ path: notify ? "img/twitter_32_notify.png" : "img/twitter_32.png" });
+var setNotifyIcon = function (notify) {
+    findTwitterTab(function (tabs) {
+        var tab = tabs.length ? tabs[0] : null;
+        if (tab == null || !tab.active) {
+            chrome.browserAction.setIcon({ path: notify ? "img/twitter_32_notify.png" : "img/twitter_32.png" });
+        }
+    });
 };
 
-chrome.extension.onRequest.addListener(function(request, sender, callback) {
+chrome.extension.onRequest.addListener(function (request, sender, callback) {
     switch(request.type) {
         case "load-options":
             callback(loadOptions());
