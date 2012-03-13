@@ -15,6 +15,6 @@ Uses the lovely Twitter icons from [Design Junction](http://designjunction.in/bl
 
 **If you feel like playing with the latest, possibly unstable update:**
 
-Install the extension [here](https://github.com/clipperhouse/BetterBird/raw/master/src.crx). If you want to mess with it, [download as a .zip](https://github.com/mwsherman/BetterBird/zipball/master) or pull with Git.
+[Download as a .zip](https://github.com/mwsherman/BetterBird/zipball/master) or pull with Git.
 
-(In Chrome, under Tools > Extensions there is a checkbox for “Developer mode” in the upper right. This will allow you to “Load unpacked extension...” from a local folder if desired.)
+In Chrome, under Tools > Extensions there is a checkbox for “Developer mode” in the upper right. This will allow you to “Load unpacked extension...” from a local folder. Select BetterBird/src.
