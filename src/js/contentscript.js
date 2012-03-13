@@ -27,7 +27,7 @@
 			});  		
 	  	}
 	  	return this.filter(function () {
-			return $(this).data(key).length > 0;
+			return $(this).data(key) != null;
 		});
 	  };
 
@@ -45,6 +45,7 @@
 	  $.fn.id = function(id) {
 	  	return attributeFn(this, "id", id);	  	
 	  };
+
 	  $.fn.href = function(href) {
 	  	return attributeFn(this, "href", href);	  	
 	  };
@@ -311,12 +312,10 @@
 	};
 
 	var createSearchModule = function () {
-		if (searchModule === undefined) {
-			searchModule = createModule(bb_classnames.savedsearch, "Saved Searches", iconUrls.default);
-			searchModule.title.appendNotifier(searchModule.clearAllNotifiers);
-			searchModule.content.hide();
-			birdBlock.append(searchModule);
-		}
+		searchModule = createModule(bb_classnames.savedsearch, "Saved Searches", iconUrls.default);
+		searchModule.title.appendNotifier(searchModule.clearAllNotifiers);
+		searchModule.content.hide();
+		birdBlock.append(searchModule);
 	};
 
 	var searches = [];
@@ -324,10 +323,7 @@
 	var startSavedSearches = function () {
 		createSearchModule();
 
-		var elements = $("div.typeahead-items > ul > li > a");
-		searches = $.map(elements, function (a) {
-			return $(a).data("search-query");
-		});
+		updateSearches();
 
 		if (searches.length) {
 			searchAll();
@@ -336,7 +332,15 @@
 		}
 	};
 
+	var updateSearches = function () {
+		var elements = $("td.typeahead-items > ul > li > a");
+		searches = $.map(elements, function (a) {
+			return $(a).data("search-query");
+		});
+	};
+
 	var searchAll = function() {
+		updateSearches();
     	for (var i in searches) {
     		doSearch(searches[i]);
     	}		
@@ -382,12 +386,10 @@
 	};
 
 	var createMentionsModule = function () {
-		if (mentionsModule === undefined) {
-			mentionsModule = createModule(bb_classnames.mentions, "@Mentions", iconUrls.default);
-			mentionsModule.title.appendNotifier();
-			mentionsModule.content.hide();
-			searchModule.before(mentionsModule);
-		}
+		mentionsModule = createModule(bb_classnames.mentions, "@Mentions", iconUrls.default);
+		mentionsModule.title.appendNotifier();
+		mentionsModule.content.hide();
+		searchModule.before(mentionsModule);
 	};
 
 	var updateMentions = function (response) {
@@ -520,7 +522,7 @@
 		Init: function() {
 			clearInterval(urlinterval);
 
-			chrome.extension.sendRequest({ "type": "load-options" }, function (response) {
+			chrome.extension.sendRequest({ type: "load-options" }, function (response) {
 				options = response;
 				applyCss(options);
 				setTimeout(function() {					// a little time for the ajax to populate
