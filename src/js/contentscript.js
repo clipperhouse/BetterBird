@@ -386,7 +386,7 @@
 	};
 
 	var createMentionsModule = function () {
-		mentionsModule = createModule(bb_classnames.mentions, "@Mentions", iconUrls.default);
+		mentionsModule = createModule(bb_classnames.mentions, "Mentions", iconUrls.default);
 		mentionsModule.title.appendNotifier();
 		mentionsModule.content.hide();
 		searchModule.before(mentionsModule);
@@ -399,7 +399,7 @@
 
 		var a = mentionsModule.content.findByData("a", datakey, q);
 		if (a.length == 0) {
-			a = $("<a>").data(datakey, q).href("/#!/mentions/").text(q)
+			a = $("<a>").data(datakey, q).href("/#!/mentions/").text("@" + q)
 				.addNotifier()
 				.click(function(){
 					$(this).clearNotifier();
