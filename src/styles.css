@@ -42,7 +42,12 @@ body.bb-hidewho div.bb-wrapper-who {
 }
 
 body.bb-hidetrends div.bb-wrapper-trends {
-	display:none;	
+	display:none;
+}
+
+
+body.bb-hidediscover ul#global-actions > li.topics {
+	display:none;
 }
 
 

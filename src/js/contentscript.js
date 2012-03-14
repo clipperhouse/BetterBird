@@ -158,6 +158,10 @@
 	String.prototype.removePrefix = function(r) { return this.remove(/^bb\-/); };
 	String.prototype.last = function() { return this[this.length - 1]; };
 
+	var filterRTs = function(element) {
+		return element['text'] != null && element['text'].indexOf("RT ") != 0;
+	};
+
 	var body = $(document.body);
 	var wrapper = $("div.wrapper");
 	var dashboard = $("div.dashboard", wrapper);
@@ -334,9 +338,11 @@
 
 	var updateSearches = function () {
 		var elements = $("td.typeahead-items > ul > li > a");
+		console.log(elements);
 		searches = $.map(elements, function (a) {
 			return $(a).data("search-query");
 		});
+		console.log(searches);
 	};
 
 	var searchAll = function() {
@@ -352,7 +358,7 @@
 
 	var updateSavedSearch = function (response) {
 		var q = decodeURIComponent(response.query).replace('+', ' ');
-		var count = response.results.length;
+		var count = response.results.filter(filterRTs).length;
 		var datakey = "search-query";
 
 		var a = searchModule.content.findByData("a", datakey, q);
@@ -394,7 +400,7 @@
 
 	var updateMentions = function (response) {
 		var q = decodeURIComponent(response.query).replace('+', ' ');
-		var count = response.results.length;
+		var count = response.results.filter(filterRTs).length;
 		var datakey = "search-query";
 
 		var a = mentionsModule.content.findByData("a", datakey, q);
@@ -452,6 +458,7 @@
 		addStyleOptionCheckbox("columnswitch", "Switch columns");
 		addStyleOptionCheckbox("columnwide", "Widen content");
 		addStyleOptionCheckbox("font", "Use serif font");
+		addStyleOptionCheckbox("hidediscover", "Hide #Discover");
 		addStyleOptionCheckbox("hidewho", "Hide “Who to follow”");
 		addStyleOptionCheckbox("hidetrends", "Hide “Trends”");
 
