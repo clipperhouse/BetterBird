@@ -169,9 +169,9 @@
 
 	var regex = {
 		scheme: /^http[s]?:\/\/(www\.)*/,
-		trailingid: /\/[A-Z]*[\d\/]+$/gi,
+		trailingid: /\/\d+$/gi,
 		trailing: /[\/\-\.\s]$/,
-		fileext: /(.html|.php|.aspx)/i,
+		fileext: /(.html|.htm|.jpg|.php|.aspx|.story)/i,
 		querystring: /\?.*$/,
 		nyt: /www10\.nytimes/
 	};
@@ -206,7 +206,9 @@
 			return parts.join('/');
 		}
 		parts.splice(1, parts.length - 2, "…");
-		parts[this.length] = parts[this.length].split('-').slice(0, 6).join("-");
+		parts[this.length] = parts[this.length]
+			.split('-').slice(0, 5).join("-")
+			.split('_').slice(0, 5).join("_");
 		return parts.join('/');
 	};
 
