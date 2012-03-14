@@ -103,8 +103,15 @@ var saveOptions = function (options) {
 };
 
 var doSearch = function (q, callback) {
-    var storagekey = "refreshurl." + q.remove("@");
-    var qs = localStorage[storagekey] || "?q=" + encodeURIComponent(q) + "&rpp=100";
+    var storagekey = "refreshurl." + q;
+    var qs;
+
+    if (q.startsWith("@") && localStorage[storagekey.remove("@")]) {     // backwards compat issue
+        qs = localStorage[storagekey.remove("@")].replace("q=" + q.remove("@"), "q=" + q)
+    } else {
+        qs = localStorage[storagekey] || "?q=" + encodeURIComponent(q) + "&rpp=100";
+    }
+
     var url = "http://search.twitter.com/search.json" + qs;
     $.getJSON(url, function (response) {
         localStorage[storagekey] = response.refresh_url;

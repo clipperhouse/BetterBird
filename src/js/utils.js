@@ -66,4 +66,6 @@
 	String.prototype.remove = function(r) { return this.replace(r, ''); };
 	String.prototype.removePrefix = function(r) { return this.remove(/^bb\-/); };
 	String.prototype.last = function() { return this[this.length - 1]; };
+	String.prototype.contains = function(s) { return this.indexOf(s) > -1; };
+	String.prototype.startsWith = function(s) { return this.indexOf(s) == 0; };
 })();
