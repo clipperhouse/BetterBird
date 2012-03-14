@@ -338,11 +338,9 @@
 
 	var updateSearches = function () {
 		var elements = $("td.typeahead-items > ul > li > a");
-		console.log(elements);
 		searches = $.map(elements, function (a) {
 			return $(a).data("search-query");
 		});
-		console.log(searches);
 	};
 
 	var searchAll = function() {
