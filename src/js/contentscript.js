@@ -20,64 +20,6 @@
 	};
 
 	(function($) {
-	  $.fn.filterByData = function(key, value) {
-	  	if (value) {
-		  	return this.filter(function () {
-				return $(this).data(key) == value;
-			});  		
-	  	}
-	  	return this.filter(function () {
-			return $(this).data(key) != null;
-		});
-	  };
-
-	  $.fn.findByData = function(selector, key, value) {
-	  	return this.find(selector).filterByData(key, value);
-	  };
-
-	  var attributeFn = function(j, name, value) {
-	  	if (value) {
-	  		return j.attr(name, value)
-	  	}
-	  	return j.attr(name);
-	  };
-
-	  $.fn.id = function(id) {
-	  	return attributeFn(this, "id", id);	  	
-	  };
-
-	  $.fn.href = function(href) {
-	  	return attributeFn(this, "href", href);	  	
-	  };
-
-	  $.fn.src = function(src) {
-	  	return attributeFn(this, "src", src);	  	
-	  };
-
-  	  $.fn.title = function(title) {
-	  	return attributeFn(this, "title", title);	  	
-	  };
-
-  	  $.fn.for = function(obj) {
-  	  	if (obj.id()) {
-  	  		return attributeFn(this, "for", obj.id())
-  	  	}
-	  	return attributeFn(this, "for", obj);	  	
-	  };
-
-	  $.fn.checked = function(ischecked) {
-	  	if (ischecked === true) {
-	  		return this.attr("checked", "checked");
-	  	}
-	  	if (ischecked === false) {
-	  		return this.removeAttr("checked", "checked");
-	  	}
-	  };
-
-	  $.fn.findByClass = function(classname) {
-	  	return this.find("." + classname);
-	  };
-
 	  var newNotifier = function(){
 	  	var s = $("<small>").addClass(bb_classnames.notify).data(bb_datanames.count, 0);
 	  	return s;	  	
@@ -148,19 +90,17 @@
   	  $.fn.clearNotifier = function() {
 	  	return this.getNotifier().text("").data(bb_datanames.count, 0);
 	  };
-
-	  $.fn.incrementData = function(key, inc) {
-	  	return this.data(key, this.data(key) + inc);
-	  };
 	})(jQuery);
-
-	String.prototype.remove = function(r) { return this.replace(r, ''); };
-	String.prototype.removePrefix = function(r) { return this.remove(/^bb\-/); };
-	String.prototype.last = function() { return this[this.length - 1]; };
 
 	var filterRTs = function(element) {
 		return element['text'] != null && element['text'].indexOf("RT ") != 0;
 	};
+
+	var filterUser = function (username) {
+		return function(element) {
+			return element['from_user'] != null && element['from_user'] != username.remove("@");
+		};
+	}
 
 	var body = $(document.body);
 	var wrapper = $("div.wrapper");
@@ -347,9 +287,7 @@
 
 	var searchAll = function() {
 		updateSearches();
-    	for (var i in searches) {
-    		doSearch(searches[i]);
-    	}		
+		searches.forEach(doSearch);
 	};
 
 	var doSearch = function(q) {
@@ -381,7 +319,7 @@
 
 		var elements = $("a.account-summary div.account-group").first();
 		mentions = $.map(elements, function (a) {
-			return $(a).data("screen-name");
+			return "@" + $(a).data("screen-name");
 		});
 
 		if (mentions.length) {
@@ -400,12 +338,11 @@
 
 	var updateMentions = function (response) {
 		var q = decodeURIComponent(response.query).replace('+', ' ');
-		var count = response.results.filter(filterRTs).length;
+		var count = response.results.filter(filterRTs).filter(filterUser(q)).length;
 		var datakey = "search-query";
-
 		var a = mentionsModule.content.findByData("a", datakey, q);
 		if (a.length == 0) {
-			a = $("<a>").data(datakey, q).href("/#!/mentions/").text("@" + q)
+			a = $("<a>").data(datakey, q).href("/#!/mentions/").text(q)
 				.addNotifier()
 				.click(function(){
 					$(this).clearNotifier();
@@ -418,9 +355,7 @@
 	};
 
 	var mentionsAll = function() {
-    	for (var i in mentions) {
-    		doMentions(mentions[i]);
-    	}		
+		mentions.forEach(doMentions);
 	};
 
 	var doMentions = function(q) {
