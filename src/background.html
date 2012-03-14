@@ -106,7 +106,7 @@ var doSearch = function (q, callback) {
     var storagekey = "refreshurl." + q;
     var qs;
 
-    if (q.startsWith("@") && localStorage[storagekey.remove("@")]) {     // backwards compat issue
+    if (q.startsWith("@") && localStorage[storagekey.remove("@")] && !localStorage[storagekey]) {     // backwards compat issue
         qs = localStorage[storagekey.remove("@")].replace("q=" + q.remove("@"), "q=" + q)
     } else {
         qs = localStorage[storagekey] || "?q=" + encodeURIComponent(q) + "&rpp=100";
