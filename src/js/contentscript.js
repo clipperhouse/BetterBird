@@ -155,8 +155,11 @@
 	var expandUrls = function() {
 		$("a[data-ultimate-url], a[data-expanded-url]").not("a." + bb_classnames.expand).each(function() {
 			var a = $(this);
-			var u = a.data("ultimate-url") || a.data("expanded-url");
-			a.data(bb_datanames.originaltext, $(this).text()).text(abbrevUrl(u)).addClass(bb_classnames.expand);
+			var u = (a.data("ultimate-url") || a.data("expanded-url")).replace(regex.nyt, 'nytimes');
+			a.data(bb_datanames.originaltext, $(this).text())
+				.href(u).text(abbrevUrl(u))
+				.addClass(bb_classnames.expand)
+				.removeAttr("data-ultimate-url").removeAttr("data-expanded-url");
 		});
 	};
 
@@ -260,34 +263,34 @@
 	var createSearchModule = function () {
 		searchModule = createModule(bb_classnames.savedsearch, "Saved Searches", iconUrls.default);
 		searchModule.title.appendNotifier(searchModule.clearAllNotifiers);
-		searchModule.content.hide();
+		searchModule.hide();
 		birdBlock.append(searchModule);
 	};
 
 	var searches = [];
 	var searchesperhour = 150;
 	var startSavedSearches = function () {
+		$("#search-query").focus().blur();
 		createSearchModule();
-
-		updateSearches();
-
-		if (searches.length) {
-			searchAll();
-            var searchtime = 60 * 60 * 1000 * (searches.length + 1) / searchesperhour;    // rate-limit
-            setInterval(searchAll, searchtime);
-		}
+		searchAll();
 	};
 
 	var updateSearches = function () {
-		var elements = $("td.typeahead-items > ul > li > a");
+		var elements = $(".typeahead-items a[data-search-query]");
 		searches = $.map(elements, function (a) {
 			return $(a).data("search-query");
 		});
+		console.log(searches);
 	};
 
 	var searchAll = function() {
 		updateSearches();
 		searches.forEach(doSearch);
+		var searchtime = 60 * 60 * 1000 * (searches.length + 1) / searchesperhour;    // rate-limit
+		if (searches.length) {
+			searchModule.show();
+		}
+        setTimeout(searchAll, searchtime);
 	};
 
 	var doSearch = function(q) {

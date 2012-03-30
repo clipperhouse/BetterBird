@@ -101,9 +101,9 @@ div.bb-birdblock img.bb-icon {
 	opacity: 0.5;
 	position: relative;
 	top: -3px;
-	-webkit-transition: opacity 0.3s linear;
+	-webkit-transition: opacity 0.25s;
 }
 
-div.bb-birdblock img.bb-icon.bb-notify {
+div.bb-birdblock img.bb-icon.bb-notify, div.bb-birdblock div.bb-module:hover img.bb-icon {
 	opacity: 1;
 }
