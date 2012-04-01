@@ -50,6 +50,10 @@ body.bb-hidediscover ul#global-actions > li.topics {
 	display:none;
 }
 
+body.bb-hidepromoted div.promoted-tweet {
+	display:none;
+}
+
 
 body.bb-font {
 	font: 15px/20px Georgia,serif;

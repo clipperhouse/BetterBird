@@ -280,16 +280,15 @@
 		searches = $.map(elements, function (a) {
 			return $(a).data("search-query");
 		});
-		console.log(searches);
 	};
 
 	var searchAll = function() {
 		updateSearches();
 		searches.forEach(doSearch);
-		var searchtime = 60 * 60 * 1000 * (searches.length + 1) / searchesperhour;    // rate-limit
 		if (searches.length) {
 			searchModule.show();
 		}
+		var searchtime = 60 * 60 * 1000 * (searches.length + 1) / searchesperhour;    // rate-limit
         setTimeout(searchAll, searchtime);
 	};
 
@@ -397,6 +396,7 @@
 		addStyleOptionCheckbox("columnwide", "Widen content");
 		addStyleOptionCheckbox("font", "Use serif font");
 		addStyleOptionCheckbox("hidediscover", "Hide #Discover");
+		addStyleOptionCheckbox("hidepromoted", "Hide Promoted tweets");
 		addStyleOptionCheckbox("hidewho", "Hide “Who to follow”");
 		addStyleOptionCheckbox("hidetrends", "Hide “Trends”");
 
