@@ -14,7 +14,7 @@
     {
       "matches": ["*://twitter.com/*"],
       "css": ["styles.css"],
-      "js": ["js/jquery-1.7.1.min.js", "js/jquery.hoverIntent.min.js", "js/utils.js", "js/contentscript.js"]
+      "js": ["js/jquery-1.7.1.min.js", "js/jquery.hoverIntent.min.js", "js/utils.min.js", "js/contentscript.min.js"]
     }
   ],
   "permissions": [
