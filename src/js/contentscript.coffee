@@ -254,8 +254,9 @@ startMentions = ->
 createMentionsModule = ->
   mentionsModule = createModule(bb_classnames.mentions, "Mentions", iconUrls.base)
   mentionsModule.title.appendNotifier()
-  mentionsModule.content.hide()
+  mentionsModule.hide().content.hide()
   searchModule.before mentionsModule
+  mentionsModule.show()
 
 updateMentions = (response) ->
   q = decodeURIComponent(response.query).replace("+", " ")
@@ -311,8 +312,10 @@ createOptionsModule = ->
   addStyleOptionCheckbox "hidetrends", "Hide “Trends”"
   optionsModule.content.append $("<p>").append($("<small>").append("Created by ").append($("<a>").text("Matt Sherman").href("/#!/clipperhouse")))
   checkVersionUpdate (updated) ->
-    optionsModule.content.hide()  unless updated
+    optionsModule.content.hide() unless updated
+    optionsModule.hide()
     birdBlock.append optionsModule
+    optionsModule.show()
 
 addOptionCheckbox = (optionkey, labeltext, callback) ->
   cb = $("<input type='checkbox'>").id("bb-option-" + optionkey).checked(options[optionkey]).change(->

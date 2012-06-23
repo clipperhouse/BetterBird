@@ -343,8 +343,9 @@
   createMentionsModule = function() {
     mentionsModule = createModule(bb_classnames.mentions, "Mentions", iconUrls.base);
     mentionsModule.title.appendNotifier();
-    mentionsModule.content.hide();
-    return searchModule.before(mentionsModule);
+    mentionsModule.hide().content.hide();
+    searchModule.before(mentionsModule);
+    return mentionsModule.show();
   };
 
   updateMentions = function(response) {
@@ -416,7 +417,9 @@
       if (!updated) {
         optionsModule.content.hide();
       }
-      return birdBlock.append(optionsModule);
+      optionsModule.hide();
+      birdBlock.append(optionsModule);
+      return optionsModule.show();
     });
   };
 

@@ -1,0 +1,120 @@
+div#page-node-home {
+	display: none;
+}
+
+body.bb-columnswitch {
+	div.content-main {
+		float:left;
+	}	
+	div.dashboard {
+		float:right;
+	}
+}
+
+body.bb-columnswitch {
+	div.module {
+		i.chev-right {
+			right: auto;
+			-webkit-transform: scaleX(-1);
+			left: 12px;
+		}
+		a.list-link {
+			padding-left: 30px;
+		}
+	}
+}
+
+body.bb-columnwide {
+	div.wrapper {
+		width:987px;
+	}
+	div.content-main {
+		width:672px;
+	}
+	div.global-nav {
+		div.container {
+			width: 1015px;
+		}
+	}
+	div.tweet {
+		p {
+			width: 92%;
+		}
+	}
+}
+
+
+body.bb-hidewho div.bb-wrapper-who {
+	display:none;
+}
+
+body.bb-hidetrends div.bb-wrapper-trends {
+	display:none;
+}
+
+
+body.bb-hidediscover ul#global-actions > li.topics {
+	display:none;
+}
+
+body.bb-hidepromoted div.promoted-tweet {
+	display:none;
+}
+
+
+body.bb-font, body.bb-font.ms-windows {
+	font: 15px/20px Georgia,serif;
+	label, textarea, select, button {
+		font: 13px/20px Georgia,serif;
+	}
+}
+
+
+div.bb-birdblock small.bb-notify {
+	color: #f3a009;
+	display: inline-block;
+	margin: 0 8px;
+	line-height:100%;
+}
+
+
+div.bb-birdblock {
+	h3 {
+		margin-bottom:0;
+		a.bb-clear {
+			display: none;
+			cursor: pointer;
+		}
+		+ div {
+			padding-top:10px;
+		}
+	}
+	p {
+		line-height:19px;
+	}
+	label {
+		display: inline-block;
+	}
+	input[type=checkbox] + label {
+		margin-left: 5px;
+		cursor: pointer;
+	}
+	img.bb-icon {
+		float: right;
+		width: 20px;
+		height: 20px;
+		opacity: 0.5;
+		position: relative;
+		top: -3px;
+		-webkit-transition: opacity 0.25s;
+		>.bb-notify {
+			opacity: 1;		
+		}
+		div.bb-module:hover img.bb-icon {
+			opacity: 1;
+		}
+	}
+	div.bb-module:hover img.bb-icon {
+		opacity: 1;
+	}
+}
