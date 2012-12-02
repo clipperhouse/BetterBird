@@ -1,3 +1,4 @@
+
 bb_classnames =
   module: "bb-module"
   expand: "bb-expand"
@@ -72,7 +73,7 @@ filterUser = (username) ->
   (element) ->
     element["from_user"]? and element["from_user"] isnt username.remove("@")
 
-body = $(document.body)
+body = $("html")
 wrapper = $("div.wrapper")
 dashboard = $("div.dashboard", wrapper)
 birdBlock = undefined

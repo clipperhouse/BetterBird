@@ -2,73 +2,65 @@ div#page-node-home {
 	display: none;
 }
 
-body.bb-columnswitch {
-	div.content-main {
-		float:left;
-	}	
-	div.dashboard {
-		float:right;
-	}
-}
-
-body.bb-columnswitch {
-	div.module {
-		i.chev-right {
-			right: auto;
-			-webkit-transform: scaleX(-1);
-			left: 12px;
+html {
+	&.bb-columnswitch {
+		div.content-main {
+			float:left;
+		}	
+		div.dashboard {
+			float:right;
 		}
-		a.list-link {
-			padding-left: 30px;
-		}
-	}
-}
-
-body.bb-columnwide {
-	div.wrapper {
-		width:987px;
-	}
-	div.content-main {
-		width:672px;
-	}
-	div.global-nav {
-		div.container {
-			width: 1015px;
+		div.module {
+			i.chev-right {
+				right: auto;
+				-webkit-transform: scaleX(-1);
+				left: 12px;
+			}
+			a.list-link {
+				padding-left: 30px;
+			}
 		}
 	}
-	div.tweet {
-		p {
-			width: 92%;
+	&.bb-columnwide {
+		div.wrapper {
+			width:987px;
+		}
+		div.content-main {
+			width:672px;
+		}
+		div.global-nav {
+			div.container {
+				width: 1015px;
+			}
+		}
+		div.tweet {
+			p {
+				width: 92%;
+			}
+		}
+	}
+	&.bb-hidewho div.bb-wrapper-who {
+		display:none;
+	}
+	&.bb-hidetrends div.bb-wrapper-trends {
+		display:none;
+	}
+	&.bb-hidediscover ul#global-actions > li.topics {
+		display:none;
+	}
+	&.bb-hidepromoted div.promoted-tweet {
+		display:none;
+	}
+
+	&.bb-font, &.bb-font.ms-windows {
+		> body {
+			font: 15px/20px Georgia,serif;
+			label, textarea, select, button {
+				font: 13px/20px Georgia,serif;
+			}
 		}
 	}
 }
-
-
-body.bb-hidewho div.bb-wrapper-who {
-	display:none;
-}
-
-body.bb-hidetrends div.bb-wrapper-trends {
-	display:none;
-}
-
-
-body.bb-hidediscover ul#global-actions > li.topics {
-	display:none;
-}
-
-body.bb-hidepromoted div.promoted-tweet {
-	display:none;
-}
-
-
-body.bb-font, body.bb-font.ms-windows {
-	font: 15px/20px Georgia,serif;
-	label, textarea, select, button {
-		font: 13px/20px Georgia,serif;
-	}
-}
-
 
 div.bb-birdblock small.bb-notify {
 	color: #f3a009;
