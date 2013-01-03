@@ -3,6 +3,8 @@ html.bb-columnswitch div.content-main{float:left;}
 html.bb-columnswitch div.dashboard{float:right;}
 html.bb-columnswitch div.module i.chev-right{right:auto;-webkit-transform:scaleX(-1);left:12px;}
 html.bb-columnswitch div.module a.list-link{padding-left:30px;}
+html.bb-columnswitch #suggested-users{clear:left;}
+html.bb-columnswitch div.profile-card{float:left;width:670px;}html.bb-columnswitch div.profile-card div.profile-header-inner{background-position:center center;}
 html.bb-columnwide div.wrapper{width:987px;}
 html.bb-columnwide div.content-main{width:672px;}
 html.bb-columnwide div.global-nav div.container{width:1015px;}
