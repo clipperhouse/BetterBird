@@ -10,6 +10,8 @@ html.bb-columnwide div.content-main{width:672px;}
 html.bb-columnwide div.global-nav div.container{width:1015px;}
 html.bb-columnwide div.tweet p{width:92%;}
 html.bb-columnwide div.profile-card{width:670px;}html.bb-columnwide div.profile-card div.profile-header-inner{background-position:center center;}
+html.bb-columnwide #profile_popup .modal{width:670px;}
+html.bb-columnwide .profile-header-inner-overlay{width:670px;}
 html.bb-hidewho div.bb-wrapper-who{display:none;}
 html.bb-hidetrends div.bb-wrapper-trends{display:none;}
 html.bb-hidediscover ul#global-actions>li.topics{display:none;}
