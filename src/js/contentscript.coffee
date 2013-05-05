@@ -364,6 +364,9 @@ BetterBird = Init: ->
     type: "load-options", (response) ->
       options = response
       applyCss options
+      setInterval -> 
+        applyCss options
+      , 100
       setTimeout (->
         createBirdBlock()
         urlinterval = setInterval(->
